@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Usuario - Asesoría IA</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f9; padding: 20px; margin: 0; }
+        .container { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .btn { background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 500; transition: 0.2s; }
+        .btn:disabled { background: #9aa0a6; cursor: not-allowed; }
+        
+        /* Botón de cierre oculto por defecto */
+        #finish-container { display: none; margin-top: 15px; background: #e6f4ea; border: 1px solid #34a853; padding: 15px; border-radius: 8px; text-align: center; }
+        .btn-success { background: #1e8e3e; color: white; border: none; width: 100%; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
+        .btn-success:hover { background: #137333; }
+        
+        input { padding: 12px; border: 1px solid #dadce0; border-radius: 6px; font-size: 16px; }
+        input:disabled { background: #f1f3f4; color: #5f6368; }
+        #chat-box { height: 380px; overflow-y: auto; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; background: #fafafa; margin-bottom: 15px; }
+        .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 8px; max-width: 80%; line-height: 1.4; }
+        .msg-user { background: #e8f0fe; color: #1a73e8; margin-left: auto; text-align: right; }
+        .msg-bot { background: #e6f4ea; color: #137333; }
+        .screen { display: none; }
+        .active { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" style="text-decoration: none; color: #5f6368;">⬅ Volver al inicio</a>
+    
+    <div id="login-section" class="screen active" style="text-align: center; margin-top: 30px;">
+        <h2>👋 Bienvenido a tu Asesoría Financiera</h2>
+        <p>Por favor ingresa tu correo para iniciar la conversación con nuestra IA:</p>
+        <input type="email" id="user-email" placeholder="tu@correo.com" style="width: 70%;"><br><br>
+        <button class="btn" onclick="loginUser()">Comenzar a Chatear</button>
+    </div>
+
+    <div id="chat-section" class="screen">
+        <h3>💬 Asesoría IA | Correo: <span id="display-email" style="color:#1a73e8"></span></h3>
+        <div id="chat-box">
+            <div class="msg msg-bot">¡Hola! Soy tu asesor e IA Tutor de Futuro Academy. ¿En qué te puedo ayudar hoy o qué te gustaría aprender sobre inversiones?</div>
+        </div>
+        
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="chat-input" placeholder="Escribe tu consulta aquí..." style="flex: 1;">
+            <button class="btn" id="send-btn" onclick="sendMessage()">Enviar</button>
+        </div>
+
+        <!-- CONTENEDOR OCULTO: Solo aparecerá cuando la IA decida que el lead está listo -->
+        <div id="finish-container">
+            <p style="margin: 0; color: #137333; font-weight: bold;">🎉 ¡La IA ha completado tu perfil financiero!</p>
+            <p style="margin: 5px 0 0 0; font-size: 14px; color: #5f6368;">Ahora puedes solicitar que un asesor corporativo te contacte con una propuesta a la medida.</p>
+            <button class="btn-success" id="finish-btn" onclick="finishChat()">✨ Enviar mi perfil al Ejecutivo Comercial</button>
+        </div>
+    </div>
+</div>
+
+<script src="usuario.js"></script>
+</body>
+</html>

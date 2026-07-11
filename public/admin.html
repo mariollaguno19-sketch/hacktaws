@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM Administrativo - Track 1</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #eceff1; padding: 20px; margin: 0; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .btn { background: #1a73e8; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-size: 14px; margin-right: 5px; font-weight: 500; }
+        .btn:hover { opacity: 0.9; }
+        .btn-success { background: #1e8e3e; }
+        .btn-warning { background: #f29900; }
+        .btn-danger { background: #d93025; }
+        .btn-secondary { background: #5f6368; }
+        input { padding: 12px; width: 60%; margin: 10px 0; border: 1px solid #dadce0; border-radius: 6px; font-size: 16px; }
+        .lead-card { border-left: 6px solid #1a73e8; padding: 20px; margin: 20px 0; background: #f8f9fa; border-radius: 6px; border: 1px solid #e0e0e0; border-left: 6px solid #1a73e8; }
+        textarea { width: 98%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; margin-top: 5px; }
+        .screen { display: none; }
+        .active { display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <a href="index.html" style="text-decoration: none; color: #5f6368;">⬅ Volver al inicio</a>
+    
+    <!-- PANTALLA LOGIN -->
+    <div id="admin-login-section" class="screen active" style="text-align: center; margin-top: 30px;">
+        <h2>👔 Acceso Ejecutivo al CRM</h2>
+        <p>Por favor, ingresa tus credenciales comerciales:</p>
+        <input type="text" id="admin-user" placeholder="Usuario (admin)"><br>
+        <input type="password" id="admin-pass" placeholder="Contraseña (admin)"><br><br>
+        <button class="btn" style="font-size: 16px; padding: 12px 30px;" onclick="loginAdmin()">Ingresar al Dashboard</button>
+    </div>
+
+    <!-- PANTALLA BANDEJA CRM -->
+    <div id="admin-dashboard-section" class="screen">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>👔 Bandeja de Supervisión Comercial (CRM)</h2>
+            <div>
+                <button class="btn" onclick="loadLeads()">🔄 Actualizar</button>
+                <button class="btn btn-secondary" onclick="logoutAdmin()">Cerrar Sesión</button>
+            </div>
+        </div>
+        <p style="color: #5f6368; font-size: 14px;">Recuerda: Las acciones financieras sensibles quedan como propuesta por la IA. Debes revisarlas, aprobarlas (simular envío al cliente) o eliminar registros que ya no sean útiles.</p>
+        <hr>
+        <div id="leads-container"></div>
+    </div>
+</div>
+
+<script src="admin.js"></script>
+</body>
+</html>

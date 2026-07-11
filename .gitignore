@@ -1,0 +1,19 @@
+# Dependencias de Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Variables de entorno y secretos (¡NUNCA SUBIR LA API KEY!)
+.env
+.env.local
+.env.production
+
+# Archivos del sistema y logs
+.DS_Store
+Thumbs.db
+*.log
+
+# Archivos temporales
+*.tmp
+*.swp

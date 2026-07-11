@@ -1,0 +1,24 @@
+{
+  "name": "hacktaws-agente-crm-ia",
+  "version": "1.0.0",
+  "description": "Sistema Agéntico Conversacional para Ventas y Gestión CRM - Track 1 Hackathon TAWS 2026",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "gemini",
+    "ai-agent",
+    "crm",
+    "hackathon",
+    "taws"
+  ],
+  "author": "Equipo HackTAWS",
+  "license": "ISC",
+  "dependencies": {
+    "@google/genai": "^0.1.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

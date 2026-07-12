@@ -1943,13 +1943,14 @@
         .syn-metricas .met span { font-size: 12px; color: var(--text-muted); }
         .syn-cta-row { display: flex; gap: 14px; flex-wrap: wrap; }
 
-        /* Tarjeta de evidencia: lo que recibe el ejecutivo (vidrio con refracción) */
+        /* Tarjeta de evidencia: lo que recibe el ejecutivo (brutalista y dinámico) */
         .syn-evidencia {
-            background: rgba(15, 23, 42, 0.55);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--card-bg) !important;
+            border: 2px solid var(--card-border) !important;
             border-radius: 20px; padding: 22px;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 24px 48px -20px rgba(3, 7, 18, 0.6);
+            box-shadow: var(--card-shadow) !important;
             animation: synFloat 7s ease-in-out infinite;
+            transition: background-color 0.4s, border-color 0.4s, box-shadow 0.4s !important;
         }
         @keyframes synFloat {
             0%, 100% { transform: translateY(0); }
@@ -1965,30 +1966,35 @@
             background: var(--brand-primary); box-shadow: 0 0 0 3px var(--brand-primary-soft);
         }
         .syn-ev-burbuja {
-            font-size: 12.5px; line-height: 1.5; color: #cbd5e1;
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 12.5px; line-height: 1.5; color: var(--text-color) !important;
+            background: var(--card-bg-opacity) !important; border: 1px solid var(--card-border) !important;
             border-radius: 10px; border-bottom-left-radius: 3px;
             padding: 9px 12px; margin-bottom: 16px; max-width: 92%;
+            transition: background-color 0.4s, border-color 0.4s, color 0.4s !important;
         }
         .syn-ev-dato {
             display: flex; justify-content: space-between; align-items: baseline;
-            padding: 9px 2px; border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 9px 2px; border-top: 2px solid var(--card-border) !important;
             font-size: 13px;
+            transition: border-color 0.4s !important;
         }
         .syn-ev-dato span { color: var(--text-muted); }
-        .syn-ev-dato b { font-family: ui-monospace, 'Cascadia Code', monospace; color: var(--text-strong); font-weight: 600; }
+        .syn-ev-dato b { font-family: ui-monospace, 'Cascadia Code', monospace; color: var(--text-strong); font-weight: 600; transition: color 0.4s; }
         .syn-ev-dato b.lima { color: var(--brand-primary); }
-
+ 
         /* Comparativa: hoy vs con Synapse */
         .syn-comparativa {
             display: grid; grid-template-columns: 1fr 1.18fr; gap: 0;
-            border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 20px;
+            border: 2px solid var(--card-border) !important; border-radius: 20px;
             overflow: hidden; margin-bottom: 76px;
+            box-shadow: var(--card-shadow) !important;
+            transition: border-color 0.4s, box-shadow 0.4s !important;
         }
         .syn-comparativa .col { padding: 32px; }
         .syn-comparativa .col + .col {
-            border-left: 1px solid rgba(255, 255, 255, 0.07);
-            background: linear-gradient(180deg, rgba(197, 248, 42, 0.05), transparent 70%);
+            border-left: 2px solid var(--card-border) !important;
+            background: var(--card-bg-opacity-gradient) !important;
+            transition: border-color 0.4s, background-color 0.4s !important;
         }
         .syn-comparativa h3 {
             margin: 0 0 18px 0; font-size: 13px; font-weight: 700;
@@ -1999,11 +2005,12 @@
         .syn-comparativa ul { list-style: none; margin: 0; padding: 0; }
         .syn-comparativa li {
             display: flex; gap: 12px; align-items: flex-start;
-            font-size: 14px; color: #cbd5e1; line-height: 1.55;
+            font-size: 14px; color: var(--text-color) !important; line-height: 1.55;
             padding: 9px 0;
+            transition: color 0.4s !important;
         }
         .syn-comparativa li svg { flex-shrink: 0; margin-top: 3px; }
-
+ 
         /* Cómo funciona: filas con separadores (sin tarjetas) */
         .syn-pasos { margin-bottom: 76px; }
         .syn-pasos-titulo, .syn-seg-titulo {
@@ -2013,38 +2020,43 @@
         .syn-pasos-sub, .syn-seg-sub {
             font-size: clamp(22px, 3vw, 30px); font-weight: 750; letter-spacing: -0.02em;
             color: var(--text-strong); margin: 0 0 28px 0; max-width: 30ch;
+            transition: color 0.4s;
         }
         .syn-paso {
             display: grid; grid-template-columns: 90px 0.9fr 1.3fr;
             gap: 22px; padding: 24px 6px; align-items: baseline;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 2px solid var(--card-border) !important;
+            transition: border-color 0.4s !important;
         }
-        .syn-paso:last-child { border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        .syn-paso:last-child { border-bottom: 2px solid var(--card-border) !important; }
         .syn-paso .num {
             font-family: ui-monospace, 'Cascadia Code', monospace;
             font-size: 13px; color: var(--brand-primary); letter-spacing: 0.06em;
         }
-        .syn-paso h4 { margin: 0; color: var(--text-strong); font-size: 16.5px; font-weight: 650; }
-        .syn-paso p { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.6; }
-
+        .syn-paso h4 { margin: 0; color: var(--text-strong); font-size: 16.5px; font-weight: 650; transition: color 0.4s; }
+        .syn-paso p { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.6; transition: color 0.4s; }
+ 
         /* Para quién y modelo */
         .syn-segmentos { margin-bottom: 76px; }
         .syn-segmento {
             display: grid; grid-template-columns: 1fr 1.5fr; gap: 22px;
-            padding: 22px 6px; border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 22px 6px; border-top: 2px solid var(--card-border) !important;
+            transition: border-color 0.4s !important;
         }
-        .syn-segmento h4 { margin: 0; color: var(--text-strong); font-size: 15.5px; font-weight: 650; }
-        .syn-segmento p { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+        .syn-segmento h4 { margin: 0; color: var(--text-strong); font-size: 15.5px; font-weight: 650; transition: color 0.4s; }
+        .syn-segmento p { margin: 0; color: var(--text-muted); font-size: 14px; line-height: 1.6; transition: color 0.4s; }
         .syn-modelo {
             margin-top: 26px; padding: 20px 24px; border-radius: 14px;
-            background: var(--brand-primary-soft); border: 1px solid rgba(197, 248, 42, 0.2);
-            font-size: 14px; color: #e2e8f0; line-height: 1.6;
+            background: var(--brand-primary-soft); border: 2px solid var(--card-border) !important;
+            font-size: 14px; color: var(--text-color) !important; line-height: 1.6;
+            transition: color 0.4s, border-color 0.4s !important;
         }
         .syn-modelo b { color: var(--brand-primary); }
         .syn-nota-reg {
             font-size: 12.5px; color: var(--text-muted); line-height: 1.6;
-            border-left: 2px solid rgba(255, 255, 255, 0.15); padding-left: 14px;
+            border-left: 2px solid var(--card-border) !important; padding-left: 14px;
             margin: 26px 0 0 0; max-width: 72ch;
+            transition: color 0.4s, border-color 0.4s !important;
         }
 
         @media (max-width: 900px) {
@@ -2077,9 +2089,10 @@
             font-size: 24px;
             font-weight: 700;
             margin-bottom: 24px;
-            color: #ffffff;
+            color: var(--text-color);
             text-align: center;
             letter-spacing: -0.02em;
+            transition: color 0.4s;
         }
 
         .faq-list {
@@ -2091,29 +2104,32 @@
         }
 
         .faq-item {
-            background: rgba(15, 23, 42, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: var(--card-bg) !important;
+            border: 2px solid var(--card-border) !important;
             border-radius: 16px;
             overflow: hidden;
-            transition: all 0.3s;
+            box-shadow: var(--card-shadow) !important;
+            transition: transform 0.2s, box-shadow 0.2s, background-color 0.4s, border-color 0.4s !important;
         }
 
         .faq-item:hover {
-            border-color: rgba(197, 248, 42, 0.2);
-            background: rgba(15, 23, 42, 0.6);
+            transform: translate(-2px, -2px) !important;
+            box-shadow: 6px 6px 0px var(--brand-primary) !important;
+            border-color: var(--text-color) !important;
         }
 
         .faq-item summary {
             padding: 20px 24px;
             font-weight: 600;
             font-size: 15px;
-            color: #ffffff;
+            color: var(--text-color);
             cursor: pointer;
             outline: none;
             display: flex;
             justify-content: space-between;
             align-items: center;
             list-style: none;
+            transition: color 0.4s;
         }
 
         .faq-item summary::-webkit-details-marker {
@@ -2123,7 +2139,7 @@
         .faq-item summary::after {
             content: '+';
             font-size: 20px;
-            color: #c5f82a;
+            color: var(--brand-primary);
             font-weight: 400;
             transition: transform 0.3s;
         }
@@ -2133,32 +2149,35 @@
         }
 
         .faq-item[open] {
-            border-color: rgba(197, 248, 42, 0.25);
-            box-shadow: 0 0 15px rgba(197, 248, 42, 0.05);
+            border-color: var(--text-color) !important;
+            box-shadow: var(--card-shadow) !important;
         }
 
         .faq-content {
             padding: 0 24px 20px 24px;
             font-size: 13.5px;
-            color: #cbd5e1;
+            color: var(--text-muted) !important;
             line-height: 1.6;
-            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            border-top: 2px solid var(--card-border) !important;
             padding-top: 16px;
+            transition: color 0.4s, border-color 0.4s !important;
         }
 
         /* ── Estilos de la Sección Footer ── */
         .home-footer {
             margin-top: 64px;
-            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: 2px solid var(--card-border) !important;
             padding-top: 24px;
             text-align: center;
             font-size: 12.5px;
-            color: #64748b;
+            color: var(--text-muted);
+            transition: color 0.4s, border-color 0.4s;
         }
 
         .home-footer a {
-            color: #c5f82a;
+            color: var(--brand-primary);
             text-decoration: none;
+            transition: color 0.4s;
         }
         
         .home-footer a:hover {
@@ -2594,7 +2613,7 @@
                         <button class="btn-pill" style="padding: 14px 28px; font-size: 15px; font-weight: 700;" onclick="navigateTo('client')">
                             Probar el chat como prospecto
                         </button>
-                        <button class="btn-pill btn-pill-dark" style="padding: 14px 28px; font-size: 15px; font-weight: 700; border: 1px solid rgba(255,255,255,0.15);" onclick="navigateTo('admin')">
+                        <button class="btn-pill btn-pill-dark" style="padding: 14px 28px; font-size: 15px; font-weight: 700;" onclick="navigateTo('admin')">
                             Ver la bandeja del ejecutivo
                         </button>
                     </div>
@@ -3163,6 +3182,7 @@
             if (theme === 'dark') {
                 root.style.setProperty('--bg-color', '#0a0a0a');
                 root.style.setProperty('--text-color', '#f4f3ef');
+                root.style.setProperty('--text-strong', '#ffffff');
                 root.style.setProperty('--text-muted', '#a0a0a0');
                 root.style.setProperty('--card-bg', 'rgba(25, 25, 25, 0.7)');
                 root.style.setProperty('--card-border', 'rgba(244, 243, 239, 0.12)');
@@ -3170,12 +3190,15 @@
                 root.style.setProperty('--header-bg', 'rgba(10, 10, 10, 0.85)');
                 root.style.setProperty('--logo-circle-color', '#f4f3ef');
                 root.style.setProperty('--logo-core-color', '#ff5722');
+                root.style.setProperty('--card-bg-opacity', 'rgba(255, 255, 255, 0.05)');
+                root.style.setProperty('--card-bg-opacity-gradient', 'linear-gradient(180deg, rgba(255, 87, 34, 0.08), transparent 70%)');
                 document.body.classList.add('theme-dark');
                 document.body.classList.remove('theme-light');
                 updateFavicon('dark');
             } else {
                 root.style.setProperty('--bg-color', '#f4f3ef');
                 root.style.setProperty('--text-color', '#0a0a0a');
+                root.style.setProperty('--text-strong', '#0a0a0a');
                 root.style.setProperty('--text-muted', '#555555');
                 root.style.setProperty('--card-bg', 'rgba(255, 255, 255, 0.85)');
                 root.style.setProperty('--card-border', 'rgba(10, 10, 10, 0.15)');
@@ -3183,6 +3206,8 @@
                 root.style.setProperty('--header-bg', 'rgba(244, 243, 239, 0.85)');
                 root.style.setProperty('--logo-circle-color', '#ff5722');
                 root.style.setProperty('--logo-core-color', '#0a0a0a');
+                root.style.setProperty('--card-bg-opacity', 'rgba(0, 0, 0, 0.04)');
+                root.style.setProperty('--card-bg-opacity-gradient', 'linear-gradient(180deg, rgba(255, 87, 34, 0.05), transparent 70%)');
                 document.body.classList.add('theme-light');
                 document.body.classList.remove('theme-dark');
                 updateFavicon('light');

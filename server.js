@@ -352,9 +352,13 @@ app.use((req, res, next) => {
 
 app.use(express.json({ limit: '100kb' }));
 
-// Solo se acepta JSON en los POST de la API (bloquea envíos de formularios cruzados / CSRF simple)
+// Solo se acepta JSON en los POST de la API (bloquea envíos de formularios cruzados / CSRF simple).
+// Los POST sin cuerpo (ej. logout) se permiten: un formulario HTML siempre envía Content-Type,
+// así que la protección contra CSRF clásico se mantiene intacta.
 app.use('/api', (req, res, next) => {
-    if ((req.method === 'POST' || req.method === 'PUT') && !req.is('application/json')) {
+    const tieneContentType = !!req.headers['content-type'];
+    if ((req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH')
+        && tieneContentType && !req.is('application/json')) {
         return res.status(415).json({ error: 'El contenido debe ser application/json.' });
     }
     next();
@@ -677,7 +681,8 @@ app.post('/api/auth/login', limiteLogin, async (req, res) => {
             if (usuarioNormalizado === 'admin' && password === 'admin') {
                 console.log(`🔐 LOGIN SIMULADO (ADMIN): ${usuarioNormalizado}`);
                 setCookieSesion(req, res, 'mock_admin_token', SESION_DURACION_MS / 1000);
-                return res.json({ token: 'mock_admin_token', nombre: 'Administrador Mock', rol: 'admin' });
+                // SEGURIDAD: el token de admin viaja SOLO en la cookie httpOnly, nunca en el body
+                return res.json({ nombre: 'Administrador Mock', rol: 'admin' });
             }
             registrarFalloLogin(usuarioNormalizado);
             return res.status(401).json({ error: 'Credenciales incorrectas.' });
@@ -710,7 +715,8 @@ app.post('/api/auth/login', limiteLogin, async (req, res) => {
 
         console.log(`🔐 LOGIN EXITOSO (ADMIN): ${cuenta.usuario} (${cuenta.rol})`);
         setCookieSesion(req, res, token, SESION_DURACION_MS / 1000);
-        res.json({ token, nombre: cuenta.nombre, rol: cuenta.rol, expira_en: expira });
+        // SEGURIDAD: el token de admin viaja SOLO en la cookie httpOnly, nunca en el body
+        res.json({ nombre: cuenta.nombre, rol: cuenta.rol, expira_en: expira });
     } catch (e) {
         console.error('❌ ERROR EN LOGIN ADMIN:', e.message || e);
         res.status(500).json({ error: 'Error interno al iniciar sesión.' });
@@ -771,6 +777,16 @@ app.post('/api/auth/logout', requiereAuth, async (req, res) => {
         limpiarCookieSesion(req, res);
         res.status(500).json({ error: 'No se pudo cerrar la sesión.' });
     }
+});
+
+// Estado del motor de IA (público, sin secretos): el frontend muestra el modo real
+app.get('/api/estado', (req, res) => {
+    const geminiActivo = !isMockGemini
+        && !!(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() && process.env.GEMINI_API_KEY !== 'tu_api_key_aqui');
+    res.json({
+        motor: geminiActivo ? 'gemini' : 'simulado',
+        base_datos: isMockDb ? 'simulada' : 'supabase'
+    });
 });
 
 // ── Endpoint de Chat (público, con límite de peticiones) ──

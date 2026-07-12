@@ -422,7 +422,7 @@
             line-height: 1.5;
         }
 
-        input[type="email"], input[type="text"] {
+        input[type="email"], input[type="text"], input[type="password"] {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #ffffff;
@@ -437,7 +437,7 @@
             text-align: center;
         }
 
-        input[type="email"]:focus, input[type="text"]:focus {
+        input[type="email"]:focus, input[type="text"]:focus, input[type="password"]:focus {
             border-color: #c5f82a;
             background: rgba(255, 255, 255, 0.06);
         }
@@ -2241,7 +2241,7 @@
                     <span style="background: linear-gradient(135deg, #c5f82a 0%, #38bdf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Asesoría Financiera Inteligente</span>
                 </h1>
                 <p style="font-size: clamp(15px, 2vw, 17px); color: #94a3b8; line-height: 1.6; max-width: 720px; margin: 0 auto 32px auto;">
-                    Synapse educa a tus prospectos en lenguaje natural, califica automáticamente su perfil de inversión y conecta sus intenciones directamente en el CRM de Supabase en tiempo real.
+                    Para cooperativas, casas de valores y equipos comerciales financieros: Synapse conversa con tus prospectos 24/7, los educa en lenguaje natural y entrega a tus ejecutivos solo leads calificados — con monto, perfil de riesgo y urgencia — directo en tu CRM, siempre con un humano al mando.
                 </p>
                 
                 <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
@@ -2494,7 +2494,7 @@
             </div>
 
             <!-- PANTALLA BANDEJA CRM -->
-            <div id="admin-dashboard-section">
+            <div id="admin-dashboard-section" style="display: none;">
                 <div class="dashboard-header">
                     <h2>Bandeja CRM Ejecutivo</h2>
                     <div class="header-actions">
@@ -3608,6 +3608,50 @@
                         const destino = parseFloat(el.textContent) || 0;
                         animarNumero(el, previos[i], destino, dec);
                     });
+                };
+            }
+        })();
+
+        // ════════════════════════════════════════════════
+        // CAPA DE SEGURIDAD SYNAPSE (JS)
+        // ════════════════════════════════════════════════
+        (function () {
+            // Purga claves API almacenadas por versiones anteriores de la app:
+            // la clave de Gemini ahora vive únicamente en el .env del servidor.
+            try {
+                sessionStorage.removeItem('gemini_api_key');
+                sessionStorage.removeItem('synapse_ai_active');
+            } catch (e) { }
+
+            // Indicador honesto del motor de IA: refleja el estado REAL del servidor
+            async function actualizarIndicadorMotor() {
+                const boton = document.getElementById('synapse-toggle-btn');
+                if (!boton) return;
+                try {
+                    const res = await fetch('/api/estado');
+                    const estado = await res.json();
+                    const punto = boton.querySelector('.pulse-dot');
+                    if (estado.motor === 'gemini') {
+                        boton.classList.add('active');
+                        boton.childNodes.forEach(n => { if (n.nodeType === 3) n.textContent = ' Gemini Activo'; });
+                        if (punto) punto.style.background = '#c5f82a';
+                    } else {
+                        boton.classList.remove('active');
+                        boton.childNodes.forEach(n => { if (n.nodeType === 3) n.textContent = ' Modo Simulado'; });
+                        if (punto) punto.style.background = '#f87171';
+                    }
+                    boton.title = estado.motor === 'gemini'
+                        ? 'Motor real de Gemini activo (configurado en el servidor)'
+                        : 'Demo con IA simulada. Para activar Gemini: agrega GEMINI_API_KEY en el .env del servidor.';
+                } catch (e) { /* si el estado no responde, se deja el texto por defecto */ }
+            }
+            actualizarIndicadorMotor();
+
+            // Red de seguridad: si el refactor del botón quedó sin función definida,
+            // el clic informa en lugar de lanzar un error.
+            if (typeof window.toggleSynapseAi !== 'function') {
+                window.toggleSynapseAi = function () {
+                    alert('Por seguridad, el motor de IA se configura en el servidor:\n\nAgrega tu GEMINI_API_KEY en el archivo .env y reinicia el servidor. Nunca se aceptan claves desde el navegador.');
                 };
             }
         })();

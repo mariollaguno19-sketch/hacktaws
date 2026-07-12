@@ -1,5 +1,20 @@
-# 🤖 Sistema Agéntico Comercial & Tutor IA - Track 1
+# 🤖 Synapse — Agente Comercial IA & Tutor Financiero (Track 1)
 **Hackathon de Agentes Financieros IA - Agentic Scale Ecuador Tech Week 2026**[cite: 1, 2]
+
+---
+
+## 🎯 Definición de Producto
+
+> **Synapse es para cooperativas de ahorro y crédito y casas de valores cuyos ejecutivos comerciales hoy pierden horas respondiendo mensajes de curiosos y persiguiendo formularios vacíos. Con Synapse, cada mañana abren su bandeja y encuentran solo prospectos ya calificados — con monto, perfil de riesgo y urgencia — listos para cerrar en una llamada.**
+
+* **Qué es:** la capa conversacional de preventa que alimenta tu CRM. No compite con el CRM: hace el trabajo que el CRM no hace (capturar y calificar 24/7 conversando) y entrega registros estructurados listos para integrarse a Salesforce, HubSpot o el CRM propio de la institución.
+* **Qué NO es:** un asesor de inversión autónomo. Synapse brinda **educación financiera general** y calificación comercial; toda recomendación y acción sensible la valida un **ejecutivo humano** (human-in-the-loop). Este diseño mantiene el producto fuera del perímetro de la asesoría de inversión regulada.
+
+## 🔑 Credenciales de Evaluación (solo demo)
+
+Para el jurado / evaluadores del demo local:
+* **Panel del Ejecutivo (CRM):** usuario `admin` / contraseña `admin` *(solo en modo simulado; en la base real las contraseñas son hashes bcrypt)*.
+* La sesión de admin usa **cookies httpOnly** (el token nunca es accesible desde JavaScript), con expiración de 8 horas y bloqueo por fuerza bruta.
 
 ---
 
@@ -10,8 +25,8 @@
 
 ## 📋 1. Información del Reto y Alcance
 * **Track Asignado:** Track 1: Inteligencia Conversacional para Ventas y Gestión de Clientes (CRM)[cite: 1, 2].
-* **Tipo de Negocio al que aplica:** Entidades financieras, bancos y cooperativas en Ecuador que ofrecen productos de inversión corporativos (**B2B**) y personales (**B2C**)[cite: 1, 2].
-* **Problema que resuelve:** Capta, califica y nutre prospectos 24/7 en lenguaje natural mientras registra el contexto comercial y educativo directamente en un CRM, eliminando la fricción de los formularios tradicionales[cite: 1].
+* **Nicho objetivo:** Cooperativas de ahorro y crédito y casas de valores en Ecuador que ofrecen productos de inversión corporativos (**B2B**) y personales (**B2C**)[cite: 1, 2].
+* **Problema que resuelve:** Capta, califica y nutre prospectos 24/7 en lenguaje natural mientras registra el contexto comercial y educativo directamente en un CRM, eliminando la fricción de los formularios tradicionales[cite: 1]. El ejecutivo deja de calificar leads fríos a mano y recibe solo prospectos accionables.
 
 ---
 

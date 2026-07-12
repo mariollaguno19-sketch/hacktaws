@@ -2472,6 +2472,70 @@
             box-sizing: border-box;
             align-self: flex-start;
         }
+
+        /* ── Overrides para Bento Cards dinámicos por Tema ── */
+        .theme-light .bento-client {
+            background: #c2f2e9 !important;
+            color: #000000 !important;
+            border: 2px solid var(--card-border) !important;
+        }
+        .theme-light .bento-client .card-title-area div {
+            color: #0e7490 !important; /* cian oscuro */
+        }
+        .theme-light .bento-client .card-title-area h2 {
+            color: #000000 !important;
+        }
+        .theme-light .bento-client .card-title-area p {
+            color: rgba(0, 0, 0, 0.8) !important;
+        }
+        
+        .theme-light .bento-admin {
+            background: #ffd3e8 !important;
+            color: #000000 !important;
+            border: 2px solid var(--card-border) !important;
+        }
+        .theme-light .bento-admin .card-title-area div {
+            color: #be185d !important; /* rosa oscuro */
+        }
+        .theme-light .bento-admin .card-title-area h2 {
+            color: #000000 !important;
+        }
+        .theme-light .bento-admin .card-title-area p {
+            color: rgba(0, 0, 0, 0.8) !important;
+        }
+
+        .theme-dark .bento-client, .theme-dark .bento-admin {
+            background: var(--card-bg) !important;
+            color: var(--text-color) !important;
+            border: 2px solid var(--card-border) !important;
+        }
+        .theme-dark .bento-client .card-title-area div,
+        .theme-dark .bento-admin .card-title-area div {
+            color: var(--brand-primary) !important;
+        }
+        .theme-dark .bento-client .card-title-area h2,
+        .theme-dark .bento-admin .card-title-area h2 {
+            color: var(--text-strong) !important;
+        }
+        .theme-dark .bento-client .card-title-area p,
+        .theme-dark .bento-admin .card-title-area p {
+            color: var(--text-muted) !important;
+        }
+
+        .bento-header {
+            background: var(--card-bg) !important;
+            border: 2px solid var(--card-border) !important;
+            box-shadow: var(--card-shadow) !important;
+            transition: background-color 0.4s, border-color 0.4s, box-shadow 0.4s !important;
+        }
+        .bento-header h1 {
+            color: var(--text-color) !important;
+            transition: color 0.4s !important;
+        }
+        .bento-header p {
+            color: var(--text-muted) !important;
+            transition: color 0.4s !important;
+        }
     </style>
 </head>
 <body>

@@ -2536,6 +2536,186 @@
             color: var(--text-muted) !important;
             transition: color 0.4s !important;
         }
+        /* ── Overrides para el Chat del Cliente y CRM del Ejecutivo ── */
+        .sidebar-header {
+            background: var(--card-bg) !important;
+            border: 2px solid var(--card-border) !important;
+            color: var(--text-color) !important;
+            box-shadow: var(--card-shadow) !important;
+            transition: background-color 0.4s, border-color 0.4s, color 0.4s, box-shadow 0.4s;
+        }
+        .sidebar-header .brand {
+            color: var(--brand-primary) !important;
+            transition: color 0.4s;
+        }
+        .sidebar-header h2 {
+            color: var(--text-strong) !important;
+            transition: color 0.4s;
+        }
+        
+        .msg-bot {
+            background: var(--card-bg-opacity) !important;
+            border: 2px solid var(--card-border) !important;
+            color: var(--text-color) !important;
+            box-shadow: 3px 3px 0px var(--card-border) !important;
+            transition: background-color 0.4s, border-color 0.4s, color 0.4s !important;
+        }
+        
+        .typing-indicator {
+            background: var(--card-bg-opacity) !important;
+            border: 2px solid var(--card-border) !important;
+            color: var(--text-color) !important;
+            transition: background-color 0.4s, border-color 0.4s, color 0.4s !important;
+        }
+
+        #admin-login-section {
+            background: var(--card-bg) !important;
+            border: 2px solid var(--card-border) !important;
+            box-shadow: var(--card-shadow) !important;
+            color: var(--text-color) !important;
+            transition: background-color 0.4s, border-color 0.4s, color 0.4s, box-shadow 0.4s !important;
+        }
+        #admin-login-section h2 {
+            color: var(--text-strong) !important;
+            transition: color 0.4s;
+        }
+        #admin-login-section p {
+            color: var(--text-muted) !important;
+            transition: color 0.4s;
+        }
+        .form-group label {
+            color: var(--text-muted) !important;
+            transition: color 0.4s;
+        }
+        
+        .dashboard-header {
+            border-bottom: 2px solid var(--card-border) !important;
+            transition: border-color 0.4s;
+        }
+        .dashboard-header h2 {
+            color: var(--text-strong) !important;
+            transition: color 0.4s;
+        }
+        .user-welcome {
+            color: var(--text-muted) !important;
+            transition: color 0.4s;
+        }
+        .user-welcome span {
+            color: var(--text-strong) !important;
+            transition: color 0.4s;
+        }
+
+        .lead-card {
+            border-left: 8px solid var(--brand-primary) !important;
+        }
+
+        /* Lead detail drawer / card styles */
+        .drawer-card {
+            background: var(--bg-color) !important;
+            color: var(--text-color) !important;
+            border-left: 2px solid var(--card-border) !important;
+            transition: background-color 0.4s, border-color 0.4s, color 0.4s !important;
+        }
+        .drawer-header {
+            border-bottom: 2px solid var(--card-border) !important;
+            transition: border-color 0.4s;
+        }
+        .drawer-header h3 {
+            color: var(--text-strong) !important;
+            transition: color 0.4s;
+        }
+        .lead-header h3 {
+            color: var(--text-strong) !important;
+            transition: color 0.4s;
+        }
+        .lead-header {
+            border-bottom: 2px solid var(--card-border) !important;
+            transition: border-color 0.4s;
+        }
+        .lead-info-item p {
+            color: var(--text-color) !important;
+            transition: color 0.4s;
+        }
+        .lead-info-item strong {
+            color: var(--text-muted) !important;
+            transition: color 0.4s;
+        }
+        .lead-status-row {
+            border-top: 2px solid var(--card-border) !important;
+            transition: border-color 0.4s;
+        }
+        .proposal-area label {
+            color: var(--text-color) !important;
+            transition: color 0.4s;
+        }
+        textarea {
+            background: var(--card-bg) !important;
+            border: 2px solid var(--text-color) !important;
+            color: var(--text-color) !important;
+            transition: background-color 0.4s, border-color 0.4s, color 0.4s !important;
+        }
+        textarea:focus {
+            border-color: var(--brand-primary) !important;
+            box-shadow: 3px 3px 0px var(--text-color) !important;
+        }
+
+        /* CRM Analíticas / KPI Cards de la derecha */
+        .visa-card, .chart-container-card, .trend-container-card {
+            background: var(--card-bg) !important;
+            border: 2px solid var(--card-border) !important;
+            box-shadow: var(--card-shadow) !important;
+            transition: background-color 0.4s, border-color 0.4s, box-shadow 0.4s !important;
+        }
+        .visa-card .brand-name {
+            color: var(--text-color) !important;
+            transition: color 0.4s;
+        }
+        .visa-card .balance-value {
+            color: var(--text-color) !important;
+            transition: color 0.4s;
+        }
+        .visa-card .card-number {
+            color: var(--text-color) !important;
+            transition: color 0.4s;
+        }
+        .visa-card .card-info-val {
+            color: var(--text-color) !important;
+            transition: color 0.4s;
+        }
+        .chart-title-mobile {
+            color: var(--text-color) !important;
+            transition: color 0.4s;
+        }
+        .donut-center-text {
+            color: var(--text-color) !important;
+            transition: color 0.4s;
+        }
+        .legend-item {
+            color: var(--text-muted) !important;
+            transition: color 0.4s;
+        }
+        .legend-item span.value {
+            color: var(--text-color) !important;
+            transition: color 0.4s;
+        }
+        .donut-bg {
+            stroke: var(--card-border) !important;
+            transition: stroke 0.4s;
+        }
+        .trend-header-mobile select {
+            color: var(--text-color) !important;
+            transition: color 0.4s;
+        }
+        .toggle-month-year {
+            background: var(--card-bg-opacity) !important;
+            border: 1px solid var(--card-border) !important;
+            transition: background-color 0.4s, border-color 0.4s;
+        }
+        .toggle-btn.active {
+            background: var(--text-color) !important;
+            color: var(--bg-color) !important;
+            transition: background-color 0.4s, color 0.4s;
+        }
     </style>
 </head>
 <body>
@@ -3291,9 +3471,8 @@
 
         function handleScroll() {
             const homeView = document.getElementById('home-view');
-            // Si no estamos en la homepage, forzar tema oscuro para chat y CRM
+            // Si no estamos en la homepage, respetar el tema actual (no forzar nada en vistas hijas)
             if (!homeView || !homeView.classList.contains('active')) {
-                applyTheme('dark');
                 return;
             }
             

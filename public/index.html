@@ -1965,6 +1965,108 @@
         .home-footer a:hover {
             text-decoration: underline;
         }
+
+        /* ── Estilos de Tarjeta Auth de Clientes ── */
+        .auth-card-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: none;
+        }
+        .auth-tab.active {
+            color: var(--brand-primary);
+            border-bottom: 2px solid var(--brand-primary);
+        }
+        
+        .btn-google {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            background: #ffffff;
+            color: #1f2937;
+            border: 1px solid #e5e7eb;
+            padding: 11px 16px;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 14px;
+            transition: all 0.2s;
+        }
+        .btn-google:hover {
+            background: #f9fafb;
+            box-shadow: 0 4px 12px rgba(255,255,255,0.1);
+            transform: translateY(-1px);
+        }
+        .btn-google svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 16px 0;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+        .auth-divider::before, .auth-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .auth-divider:not(:empty)::before {
+            margin-right: .5em;
+        }
+        .auth-divider:not(:empty)::after {
+            margin-left: .5em;
+        }
+
+        .auth-consent-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-top: 14px;
+            text-align: left;
+        }
+        .auth-consent-group input[type="checkbox"] {
+            margin-top: 3px;
+            cursor: pointer;
+            accent-color: var(--brand-primary);
+        }
+        .auth-consent-label {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        /* ── Estilos de Disclaimer en Chat ── */
+        .chat-disclaimer {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            padding: 10px 16px;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(15, 23, 42, 0.2);
+            border-bottom-left-radius: 24px;
+            border-bottom-right-radius: 24px;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -2119,7 +2221,7 @@
                     <div class="card-title-area">
                         <div style="font-size: 11px; font-weight: 700; color: #c5f82a; text-transform: uppercase; margin-bottom: 6px;">Portal Ejecutivo</div>
                         <h2>Bandeja de Gestión CRM</h2>
-                        <p>Accede con las credenciales <code>admin</code> / <code>admin</code> para supervisar leads calificados, resolver objeciones y correr auditorías de IA.</p>
+                        <p>Supervisa leads calificados, resuelve objeciones y corre auditorías de IA. Acceso de demostración: <code>admin</code> / <code>admin</code> <em>(solo demo — en producción: contraseñas bcrypt, tokens hasheados y bloqueo anti fuerza bruta)</em>.</p>
                     </div>
                     <button class="btn-pill" onclick="navigateTo('admin')">Ingresar como Asesor →</button>
                 </div>
@@ -2230,10 +2332,46 @@
                 <div class="chat-bento-card">
                     <!-- Login Form -->
                     <div id="login-section">
-                        <h2>Inicio de Sesión</h2>
-                        <p>Ingrese su correo electrónico para iniciar la conversación con nuestro asesor virtual.</p>
-                        <input type="email" id="user-email" placeholder="correo@ejemplo.com"><br><br>
-                        <button class="btn-pill" onclick="loginUser()">Iniciar Conversación</button>
+                        <div class="auth-card-tabs">
+                            <button class="auth-tab active" id="tab-btn-login" onclick="setAuthMode('login')">Ingresar</button>
+                            <button class="auth-tab" id="tab-btn-signup" onclick="setAuthMode('signup')">Crear Cuenta</button>
+                        </div>
+                        
+                        <h2 id="auth-title" style="margin-top: 10px;">Iniciar Sesión</h2>
+                        <p id="auth-desc" style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Ingrese su cuenta para chatear con nuestro asesor virtual.</p>
+                        
+                        <div class="form-group" style="margin-bottom: 12px; text-align: left;">
+                            <label for="user-email" style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Correo Electrónico</label>
+                            <input type="email" id="user-email" placeholder="correo@ejemplo.com" style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 16px; text-align: left;">
+                            <label for="user-password" style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Contraseña</label>
+                            <input type="password" id="user-password" placeholder="••••••••" style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff;">
+                        </div>
+
+                        <!-- Checkbox de Consentimiento de Datos Personales (Compliance) -->
+                        <div class="auth-consent-group">
+                            <input type="checkbox" id="auth-consent-checkbox" checked>
+                            <label for="auth-consent-checkbox" class="auth-consent-label">
+                                Consiento el tratamiento de mis datos personales y financieros con fines educativos y de perfilamiento comercial bajo la ley de protección de datos.
+                            </label>
+                        </div>
+
+                        <button class="btn-pill" id="auth-submit-btn" onclick="submitAuth()" style="width: 100%; margin-top: 18px;">Iniciar Conversación</button>
+                        
+                        <div class="auth-divider">o también</div>
+
+                        <!-- Botón Google OAuth con Logo oficial -->
+                        <button class="btn-google" onclick="loginWithGoogle()">
+                            <svg viewBox="0 0 48 48">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                                <path fill="#4285F4" d="M46.5 24c0-1.55-.15-3.24-.47-4.77H24v9.03h12.75c-.53 2.87-2.13 5.31-4.5 6.9l6.98 5.41C43.32 36.33 46.5 30.77 46.5 24z"></path>
+                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-6.98-5.41c-1.95 1.3-4.48 2.07-7.91 2.07-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                            </svg>
+                            Continuar con Google
+                        </button>
                     </div>
 
                     <!-- Chat Interface -->
@@ -2260,6 +2398,11 @@
                             <p class="title">Evaluación de perfil completada</p>
                             <p>Los datos de su perfil de inversión han sido calificados. Puede enviar esta información para que un ejecutivo comercial evalúe su caso.</p>
                             <button class="btn-success" id="finish-btn" onclick="finishChat()">Transmitir perfil al Ejecutivo Comercial</button>
+                        </div>
+
+                        <!-- Legal Disclaimer (Compliance) -->
+                        <div class="chat-disclaimer">
+                            <strong>Disclaimer Legal:</strong> La información proporcionada por la IA de Synapse es de carácter puramente educativo y no constituye una recomendación de inversión, oferta comercial o asesoría personalizada. El perfil calificado está sujeto a aprobación manual de un ejecutivo y a la firma de las declaraciones normativas vigentes de protección de datos y lavado de activos.
                         </div>
                     </div>
                 </div>
@@ -2521,6 +2664,9 @@
             // Inicializar estados de Synapse y la Guía
             syncSynapseState();
             updateGuideSteps('home');
+
+            // Verificar si venimos de redirección de Google OAuth
+            checkOAuthRedirect();
         });
 
         // ── 1. ENRUTADOR CLIENT-SIDE (Navegación) ──
@@ -2567,19 +2713,127 @@
         let currentInteractionId = null;
         let chatHistoryBackup = [];
 
-        function loginUser() {
+        let authMode = "login";
+
+        function setAuthMode(mode) {
+            authMode = mode;
+            const tabLogin = document.getElementById('tab-btn-login');
+            const tabSignup = document.getElementById('tab-btn-signup');
+            const title = document.getElementById('auth-title');
+            const desc = document.getElementById('auth-desc');
+            const submitBtn = document.getElementById('auth-submit-btn');
+
+            if (mode === 'login') {
+                tabLogin.classList.add('active');
+                tabSignup.classList.remove('active');
+                title.textContent = "Iniciar Sesión";
+                desc.textContent = "Ingrese su cuenta para chatear con nuestro asesor virtual.";
+                submitBtn.textContent = "Iniciar Conversación";
+            } else {
+                tabLogin.classList.remove('active');
+                tabSignup.classList.add('active');
+                title.textContent = "Crear Cuenta";
+                desc.textContent = "Regístrese para iniciar su sesión de perfilamiento financiero.";
+                submitBtn.textContent = "Registrarse e Iniciar";
+            }
+        }
+
+        async function submitAuth() {
             const email = document.getElementById('user-email').value.trim();
+            const pass = document.getElementById('user-password').value;
+            const consent = document.getElementById('auth-consent-checkbox').checked;
+
             if (!email || !email.includes('@')) {
-                alert("Por favor ingrese una dirección de correo electrónico válida.");
+                alert("Por favor ingrese un correo electrónico válido.");
                 return;
             }
-            currentEmail = email;
-            document.getElementById('display-email').textContent = currentEmail;
-            document.getElementById('login-section').style.display = 'none';
-            document.getElementById('chat-section').style.display = 'flex';
-            document.getElementById('chat-input').focus();
+            if (!pass || pass.length < 6) {
+                alert("Por favor ingrese una contraseña de al menos 6 caracteres.");
+                return;
+            }
+            if (!consent) {
+                alert("Debe consentir el tratamiento de datos para continuar.");
+                return;
+            }
+
+            const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/signup';
             
-            chatHistoryBackup.push({ role: "model", text: "Bienvenido a la sesión de asesoría financiera de Synapse. Por favor, indíqueme su tipo de consulta o qué temas de inversión desea evaluar hoy." });
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ usuario: email, email: email, password: pass })
+                });
+                const data = await res.json();
+                
+                if (!res.ok) {
+                    alert(data.error || "Ocurrió un error al autenticar.");
+                    return;
+                }
+
+                if (data.token) {
+                    sessionStorage.setItem('crm_token', data.token);
+                    sessionStorage.setItem('crm_nombre', data.nombre || email.split('@')[0]);
+                } else if (authMode === 'signup' && !data.token) {
+                    alert(data.mensaje || "Cuenta creada. Por favor revise su correo si se requiere confirmación.");
+                    return;
+                }
+
+                currentEmail = email;
+                document.getElementById('display-email').textContent = currentEmail;
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('chat-section').style.display = 'flex';
+                document.getElementById('chat-input').focus();
+                
+                chatHistoryBackup = [{ role: "model", text: "Bienvenido a la sesión de asesoría financiera de Synapse. Por favor, indíqueme su tipo de consulta o qué temas de inversión desea evaluar hoy." }];
+            } catch (e) {
+                alert("Error de red al intentar conectar con el servidor.");
+            }
+        }
+
+        async function loginWithGoogle() {
+            const consent = document.getElementById('auth-consent-checkbox').checked;
+            if (!consent) {
+                alert("Debe consentir el tratamiento de datos para continuar.");
+                return;
+            }
+            try {
+                const res = await fetch('/api/auth/google');
+                const data = await res.json();
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert("No se pudo iniciar el flujo de Google OAuth.");
+                }
+            } catch (e) {
+                alert("Error de conexión al iniciar sesión con Google.");
+            }
+        }
+
+        function checkOAuthRedirect() {
+            const hash = window.location.hash;
+            if (hash.includes('access_token=')) {
+                const urlParams = new URLSearchParams(hash.substring(1));
+                const accessToken = urlParams.get('access_token');
+                
+                if (accessToken) {
+                    sessionStorage.setItem('crm_token', accessToken);
+                    let email = "usuario_google@prueba.com";
+                    if (accessToken.startsWith('mock_user_token_')) {
+                        email = "google_user@demo.com";
+                    }
+                    sessionStorage.setItem('crm_nombre', email.split('@')[0]);
+                    currentEmail = email;
+                    
+                    document.getElementById('display-email').textContent = currentEmail;
+                    document.getElementById('login-section').style.display = 'none';
+                    document.getElementById('chat-section').style.display = 'flex';
+                    window.location.hash = ''; // Limpiar el hash de la URL
+                    
+                    alert("Autenticación con Google exitosa.");
+                    navigateTo('client');
+                }
+            }
         }
 
         async function sendMessage() {
@@ -3166,7 +3420,7 @@
                 <ol class="guide-step-list">
                     <li>Elige por dónde empezar.</li>
                     <li>Entra a <strong>Habla con tu asesor IA</strong> y simula ser un prospecto interesado en invertir.</li>
-                    <li>O entra al <strong>Panel del Ejecutivo</strong> (usuario: <code>admin</code> / clave: <code>admin</code>) para gestionar los prospectos como asesor.</li>
+                    <li>O entra al <strong>Panel del Ejecutivo</strong> con el acceso de demostración (usuario: <code>admin</code> / clave: <code>admin</code>) para gestionar los prospectos como asesor. En producción, el acceso usa contraseñas cifradas y bloqueo por intentos fallidos.</li>
                 </ol>
             `,
             client: `

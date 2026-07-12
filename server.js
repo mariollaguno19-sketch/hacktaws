@@ -26,6 +26,18 @@ const PORT = process.env.PORT || 3000;
 const SESION_DURACION_MS = 8 * 60 * 60 * 1000; // 8 horas
 
 // ── Cliente de IA Mockeado (simulado para demos sin API key) ──
+// El chat sigue un guion de calificación determinista (no aleatorio) que reacciona
+// al contenido del mensaje: la demo se siente real aun sin conexión a Gemini.
+
+// Extrae un monto plausible mencionado en un texto ("25 mil", "$8.500", "12000"...)
+function extraerMontoMock(texto) {
+    const conMiles = texto.match(/(\d+(?:[.,]\d+)?)\s*(?:mil|k)\b/i);
+    if (conMiles) return Math.round(parseFloat(conMiles[1].replace(',', '.')) * 1000);
+    const directo = texto.match(/\$?\s*(\d{1,3}(?:[.,]\d{3})+|\d{4,})/);
+    if (directo) return parseInt(directo[1].replace(/[.,]/g, ''), 10);
+    return null;
+}
+
 const mockAiClient = {
     interactions: {
         create: async (options) => {
@@ -37,18 +49,29 @@ const mockAiClient = {
                     email = emailMatch[1];
                 }
 
+                // Deriva el perfil SOLO del historial real (no de la plantilla del prompt,
+                // que contiene palabras como "B2B" o "Conservador" y contaminaría los regex)
+                const texto = (options.input.split('HISTORIAL:')[1] || options.input).split('Reglas:')[0];
+                const esEmpresa = /empresa|negocio|compa[ñn][ií]a|corporativ|b2b/i.test(texto);
+                const monto = extraerMontoMock(texto);
+                const conservador = /seguro|bajo riesgo|conservador|plazo fijo|p[oó]liza/i.test(texto);
+                const agresivo = /agresivo|acciones|alto riesgo|r[aá]pido|crypto/i.test(texto);
+                const urgente = /este mes|ya|ahora|pronto|inmediat|urgent/i.test(texto);
+
                 const responseObj = {
                     correo_cliente: email,
-                    tipo_cliente: Math.random() > 0.5 ? "B2B" : "B2C",
-                    interes_principal: "Inversiones en Renta Fija",
-                    puntaje_prioridad: Math.floor(Math.random() * 5) + 6,
-                    monto_estimado: [5000, 10000, 25000, 50000][Math.floor(Math.random() * 4)],
-                    nivel_riesgo: ["Conservador", "Moderado", "Agresivo"][Math.floor(Math.random() * 3)],
+                    tipo_cliente: esEmpresa ? "B2B" : "B2C",
+                    interes_principal: conservador ? "Renta Fija" : (agresivo ? "Renta Variable" : "Fondos Mutuos"),
+                    puntaje_prioridad: Math.min(10, 5 + (monto && monto >= 20000 ? 2 : monto ? 1 : 0) + (urgente ? 2 : 0) + (esEmpresa ? 1 : 0)),
+                    monto_estimado: monto,
+                    nivel_riesgo: conservador ? "Conservador" : (agresivo ? "Agresivo" : "Moderado"),
                     telefono: null,
                     etapa_embudo: "Listo para asesor",
-                    resumen_necesidad: "Interés en diversificar portafolio con bajo riesgo, presupuesto estimado de $10,000.",
-                    objeciones_detectadas: ["Dudas sobre disponibilidad de fondos"],
-                    accion_sugerida_ejecutivo: "Llamar para agendar reunión y presentar portafolio de Renta Fija."
+                    resumen_necesidad: `Cliente ${esEmpresa ? "corporativo" : "personal"} interesado en ${conservador ? "instrumentos de renta fija" : "diversificar con fondos"}${monto ? `, con un monto aproximado de $${monto.toLocaleString("en-US")}` : ""}${urgente ? ". Desea comenzar cuanto antes" : ""}.`,
+                    objeciones_detectadas: monto ? ["Quiere confirmar tasas vigentes con un asesor"] : ["Aún no define el monto a invertir"],
+                    accion_sugerida_ejecutivo: urgente
+                        ? "Contactar hoy mismo: el cliente quiere comenzar de inmediato. Preparar propuesta preliminar."
+                        : "Agendar llamada esta semana para presentar portafolio acorde a su perfil."
                 };
 
                 return {
@@ -56,15 +79,43 @@ const mockAiClient = {
                     id: "mock-eval-" + Math.random().toString(36).substr(2, 9)
                 };
             } else {
-                // Si es la llamada de chat normal
-                const isFinish = Math.random() > 0.7;
-                const replyText = isFinish
-                    ? "Entendido, contamos con excelentes fondos de Renta Fija y Fondos Mutuos. Dado que ya me has proporcionado tus datos básicos de presupuesto y tipo de cliente B2C, tu perfil de inversión está listo. ||LEAD_LISTO||"
-                    : "Hola, para poder asesorarte adecuadamente según Synapse, ¿deseas invertir como empresa (B2B) o persona natural (B2C)? ¿De qué presupuesto aproximado dispones para comenzar?";
+                // Chat conversacional: guion determinista de calificación en 4 pasos.
+                // El paso se codifica en el interaction_id para mantener estado sin memoria.
+                let paso = 0;
+                const idPrevio = options.previous_interaction_id || '';
+                const matchPaso = idPrevio.match(/^mock-chat-(\d+)-/);
+                if (matchPaso) paso = Math.min(parseInt(matchPaso[1], 10) + 1, 4);
+
+                // En el primer turno el input incluye el system instruction: se aísla el mensaje real
+                const crudo = options.input || '';
+                const mensaje = crudo.includes('--- INICIO DE LA CONVERSACIÓN ---')
+                    ? crudo.split('--- INICIO DE LA CONVERSACIÓN ---')[1].replace(/^\s*Usuario:\s*/, '')
+                    : crudo;
+                const esEmpresa = /empresa|negocio|compa[ñn][ií]a|corporativ|b2b/i.test(mensaje);
+                const quiereAprender = /aprend|explica|qu[eé] es|c[oó]mo funciona|ense[ñn]a/i.test(mensaje);
+
+                let replyText;
+                if (paso === 0) {
+                    replyText = quiereAprender
+                        ? "¡Con gusto! Según enseñamos en Synapse, la Renta Fija te da una rentabilidad conocida de antemano (como bonos o pólizas) con bajo riesgo, mientras que los Fondos Mutuos diversifican tu dinero entre varios activos con gestión profesional. ¿Te parece si te hago un par de preguntas para orientarte mejor? Primero: ¿invertirías a título personal o en nombre de una empresa?"
+                        : "¡Hola! Qué gusto tenerte por aquí. Para darte una orientación a tu medida, ¿te parece si te hago un par de preguntas rápidas? La primera: ¿buscas invertir a título personal o en nombre de una empresa?";
+                } else if (paso === 1) {
+                    replyText = esEmpresa
+                        ? "Perfecto, inversión corporativa entonces. Para dimensionar bien la propuesta, ¿con qué monto aproximado le gustaría comenzar a la empresa? No necesita ser una cifra exacta."
+                        : "Perfecto, inversión personal entonces. ¿Con qué monto aproximado te gustaría comenzar? Una idea general es suficiente.";
+                } else if (paso === 2) {
+                    replyText = "Excelente, gracias. Última pregunta para completar tu perfil: ¿qué tan pronto quisieras comenzar y por cuánto tiempo podrías mantener la inversión? Por ejemplo: este mes y a un año, o más adelante y a largo plazo.";
+                } else if (paso === 3) {
+                    replyText = "¡Listo, con esto ya tengo tu perfil completo! De acuerdo con nuestro manual de Synapse, para un caso como el tuyo suele funcionar bien combinar Renta Fija con Fondos Mutuos — la regla de oro: nunca inviertas el dinero de tu gasto corriente ni tu fondo de emergencia. Un asesor humano te confirmará la propuesta exacta con las tasas vigentes. Ya puedes enviar tu perfil al ejecutivo comercial con el botón de abajo. ||LEAD_LISTO||";
+                } else {
+                    replyText = quiereAprender
+                        ? "Claro. Según enseñamos en Synapse: diversificar significa no concentrar todo en un solo activo, y el interés compuesto hace que tus ganancias generen nuevas ganancias con el tiempo. Tu perfil ya está listo para el ejecutivo cuando quieras enviarlo. ||LEAD_LISTO||"
+                        : "Tu perfil ya está completo y listo para enviar al ejecutivo comercial. Si tienes alguna otra duda sobre inversiones, con gusto te la explico mientras tanto. ||LEAD_LISTO||";
+                }
 
                 return {
                     output_text: replyText,
-                    id: "mock-interaction-" + Math.random().toString(36).substr(2, 9)
+                    id: `mock-chat-${paso}-` + Math.random().toString(36).substr(2, 9)
                 };
             }
         }
@@ -93,21 +144,75 @@ let supabase;
 if (isMockDb) {
     console.log('🧪 MODO MOCK BD ACTIVADO: supabase está simulado en memoria.');
     
+    const haceMin = (m) => new Date(Date.now() - m * 60000).toISOString();
     const leadsDb = [
         {
-            id: "11111111-2222-3333-4444-555555555555",
-            correo_cliente: "ejemplo@prueba.com",
-            tipo_cliente: "B2C",
-            interes_principal: "Renta Fija",
-            puntaje_prioridad: 8,
-            monto_estimado: 25000,
-            nivel_riesgo: "Moderado",
-            etapa_embudo: "Listo para asesor",
-            resumen_necesidad: "Inversión en póliza",
-            objeciones_detectadas: [],
-            accion_sugerida_ejecutivo: "Llamar",
-            estado_aprobacion: "Pendiente",
-            creado_en: new Date().toISOString()
+            id: "d1a2b3c4-0001-4a1b-9c2d-100000000001",
+            correo_cliente: "dnarvaez@clinicasanmarcos.ec",
+            tipo_cliente: "B2B", interes_principal: "Fondos de Inversión Corporativos",
+            puntaje_prioridad: 9, monto_estimado: 95300, nivel_riesgo: "Moderado",
+            telefono: "+593 99 745 2218", etapa_embudo: "Listo para asesor",
+            resumen_necesidad: "Clínica privada busca invertir excedentes de caja (~$95,300) con disponibilidad semestral. Decisión en el directorio de este mes.",
+            objeciones_detectadas: ["Necesita aprobación del directorio", "Pregunta por liquidez semestral"],
+            accion_sugerida_ejecutivo: "Contactar hoy: preparar propuesta corporativa con escenarios de liquidez para el directorio.",
+            estado_aprobacion: "Pendiente", creado_en: haceMin(32)
+        },
+        {
+            id: "d1a2b3c4-0002-4a1b-9c2d-100000000002",
+            correo_cliente: "valeria.montenegro@grupoandino.ec",
+            tipo_cliente: "B2B", interes_principal: "Depósitos a Plazo y Renta Fija",
+            puntaje_prioridad: 8, monto_estimado: 148500, nivel_riesgo: "Conservador",
+            telefono: "+593 98 331 0947", etapa_embudo: "Negociación",
+            resumen_necesidad: "Grupo comercial con $148,500 de excedente estacional. Prioriza proteger capital; horizonte de 9 a 12 meses.",
+            objeciones_detectadas: ["Compara tasas con otro banco", "Sensible a penalidades por retiro anticipado"],
+            accion_sugerida_ejecutivo: "Enviar comparativo de tasas y agendar reunión con la CFO esta semana.",
+            estado_aprobacion: "Pendiente", creado_en: haceMin(60 * 3)
+        },
+        {
+            id: "d1a2b3c4-0003-4a1b-9c2d-100000000003",
+            correo_cliente: "mfernanda.paz@hotmail.com",
+            tipo_cliente: "B2C", interes_principal: "Fondos Mutuos",
+            puntaje_prioridad: 8, monto_estimado: 23400, nivel_riesgo: "Moderado",
+            telefono: null, etapa_embudo: "Listo para asesor",
+            resumen_necesidad: "Profesional independiente; recibió una herencia de ~$23,400 y quiere invertirla diversificada a 3 años.",
+            objeciones_detectadas: ["Primera vez invirtiendo, pide acompañamiento"],
+            accion_sugerida_ejecutivo: "Agendar videollamada introductoria y compartir guía para primeros inversionistas.",
+            estado_aprobacion: "✅ APROBADO (Enviado al cliente)",
+            asesor_asignado: "María Pérez", creado_en: haceMin(60 * 26)
+        },
+        {
+            id: "d1a2b3c4-0004-4a1b-9c2d-100000000004",
+            correo_cliente: "gerencia@ferreteriaelconstructor.ec",
+            tipo_cliente: "B2B", interes_principal: "Depósitos a Plazo Fijo",
+            puntaje_prioridad: 7, monto_estimado: 61750, nivel_riesgo: "Conservador",
+            telefono: "+593 96 208 5531", etapa_embudo: "Calificado",
+            resumen_necesidad: "Ferretería familiar; $61,750 disponibles tras cierre fiscal. Quiere plazos cortos renovables.",
+            objeciones_detectadas: ["Desconfía de instrumentos que no conoce"],
+            accion_sugerida_ejecutivo: "Proponer plazo fijo renovable a 90 días y explicar cobertura del seguro de depósitos.",
+            estado_aprobacion: "✏️ EDITADO POR EJECUTIVO",
+            asesor_asignado: "Jorge Salinas", creado_en: haceMin(60 * 49)
+        },
+        {
+            id: "d1a2b3c4-0005-4a1b-9c2d-100000000005",
+            correo_cliente: "carlos.jimenez84@gmail.com",
+            tipo_cliente: "B2C", interes_principal: "Renta Fija (Póliza de Acumulación)",
+            puntaje_prioridad: 6, monto_estimado: 8700, nivel_riesgo: "Conservador",
+            telefono: null, etapa_embudo: "Calificado",
+            resumen_necesidad: "Empleado público; ahorra $8,700 y quiere una póliza a 12 meses sin riesgo.",
+            objeciones_detectadas: ["Pregunta si puede retirar antes del plazo"],
+            accion_sugerida_ejecutivo: "Llamar y explicar condiciones de precancelación antes de enviar la solicitud.",
+            estado_aprobacion: "Pendiente", creado_en: haceMin(60 * 54)
+        },
+        {
+            id: "d1a2b3c4-0006-4a1b-9c2d-100000000006",
+            correo_cliente: "andres.villacis@outlook.com",
+            tipo_cliente: "B2C", interes_principal: "Educación financiera",
+            puntaje_prioridad: 3, monto_estimado: null, nivel_riesgo: "Por determinar",
+            telefono: null, etapa_embudo: "Nutrición",
+            resumen_necesidad: "Estudiante universitario; quiere aprender sobre inversiones pero aún no tiene capital disponible.",
+            objeciones_detectadas: ["Sin fondos disponibles por ahora"],
+            accion_sugerida_ejecutivo: "Incluir en el boletín educativo y recontactar en 6 meses.",
+            estado_aprobacion: "❌ RECHAZADO", creado_en: haceMin(60 * 76)
         }
     ];
     const sesionesDb = [];
@@ -348,13 +453,41 @@ function hashToken(token) {
 // para que el tiempo de respuesta no revele qué usuarios existen (anti-enumeración).
 const HASH_SENUELO = bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 10);
 
-// ── Middleware de autenticación (token Bearer contra la tabla sesiones) ──
+// ── Middleware de autenticación (token Bearer híbrido: Supabase Auth + tabla sesiones) ──
 async function requiereAuth(req, res, next) {
     const encabezado = req.headers.authorization || '';
     const token = encabezado.startsWith('Bearer ') ? encabezado.slice(7) : null;
-    if (!token || token.length > 200) {
+    if (!token || token.length > 2000) { // Supabase access tokens are longer JWTs
         return res.status(401).json({ error: 'Sesión no válida. Inicia sesión nuevamente.' });
     }
+
+    // ── MODO MOCK ──
+    if (isMockDb) {
+        if (token === 'mock_admin_token') {
+            req.usuario = { id: 'mock-uuid-admin', usuario: 'admin', nombre: 'Administrador Mock', rol: 'admin' };
+            return next();
+        } else if (token.startsWith('mock_user_token')) {
+            req.usuario = { id: 'mock-uuid-user', email: 'usuario_mock@prueba.com', nombre: 'Usuario Mock', rol: 'client' };
+            return next();
+        }
+        // Si no empieza con "mock_", es un token inventado / inválido
+        if (!token.startsWith('mock_')) {
+            return res.status(401).json({ error: 'Sesión no válida o expirada. Inicia sesión nuevamente.' });
+        }
+        req.usuario = { id: 'mock-uuid-user', email: 'usuario_mock@prueba.com', nombre: 'Usuario Mock', rol: 'client' };
+        return next();
+    }
+
+    // ── 1. Intentar validar usando Supabase Auth (Clientes / Google OAuth) ──
+    try {
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (!error && user) {
+            req.usuario = { id: user.id, email: user.email, nombre: user.email.split('@')[0], rol: 'client' };
+            return next();
+        }
+    } catch (e) {}
+
+    // ── 2. Intentar validar usando la tabla de sesiones (Admins Bcrypt) ──
     try {
         const { data: sesion, error } = await supabase
             .from('sesiones')
@@ -362,21 +495,18 @@ async function requiereAuth(req, res, next) {
             .eq('token', hashToken(token))
             .maybeSingle();
 
-        if (error) throw error;
-        if (!sesion || !sesion.usuarios_admin || !sesion.usuarios_admin.activo) {
-            return res.status(401).json({ error: 'Sesión no válida. Inicia sesión nuevamente.' });
+        if (!error && sesion && sesion.usuarios_admin && sesion.usuarios_admin.activo) {
+            if (new Date(sesion.expira_en).getTime() > Date.now()) {
+                req.sesionId = sesion.id;
+                req.usuario = sesion.usuarios_admin;
+                return next();
+            } else {
+                await supabase.from('sesiones').delete().eq('id', sesion.id);
+            }
         }
-        if (new Date(sesion.expira_en).getTime() < Date.now()) {
-            await supabase.from('sesiones').delete().eq('id', sesion.id);
-            return res.status(401).json({ error: 'Tu sesión expiró. Inicia sesión nuevamente.' });
-        }
-        req.sesionId = sesion.id;
-        req.usuario = sesion.usuarios_admin;
-        next();
-    } catch (e) {
-        console.error('❌ ERROR VERIFICANDO SESIÓN:', e.message || e);
-        res.status(500).json({ error: 'Error interno verificando la sesión.' });
-    }
+    } catch (e) {}
+
+    return res.status(401).json({ error: 'Sesión no válida o expirada. Inicia sesión nuevamente.' });
 }
 
 // ── Conocimiento y persona del agente ──
@@ -430,10 +560,57 @@ REGLAS DE ESTILO:
 `;
 
 // ── Endpoints de Autenticación ──
+// Endpoint de Registro de Clientes (Supabase Auth)
+app.post('/api/auth/signup', limiteLogin, async (req, res) => {
+    const { email, password } = req.body || {};
+    if (!esTextoValido(email, 100) || !esTextoValido(password, 200)) {
+        return res.status(400).json({ error: 'Correo y contraseña son obligatorios.' });
+    }
+    const emailNormalizado = email.trim();
+    if (!EMAIL_REGEX.test(emailNormalizado)) {
+        return res.status(400).json({ error: 'El formato de correo es inválido.' });
+    }
+
+    if (isMockDb) {
+        console.log(`📝 REGISTRO SIMULADO (USER): ${emailNormalizado}`);
+        const tokenSimulado = `mock_user_token_${Buffer.from(emailNormalizado).toString('base64')}`;
+        return res.status(201).json({
+            success: true,
+            token: tokenSimulado,
+            nombre: emailNormalizado.split('@')[0],
+            rol: 'client'
+        });
+    }
+
+    try {
+        const { data, error } = await supabase.auth.signUp({
+            email: emailNormalizado,
+            password: password
+        });
+        if (error) {
+            return res.status(400).json({ error: error.message || 'No se pudo crear el registro.' });
+        }
+        console.log(`📝 REGISTRO EXITOSO (SUPABASE USER): ${emailNormalizado}`);
+        
+        const sesionActiva = data.session;
+        res.status(201).json({
+            success: true,
+            token: sesionActiva ? sesionActiva.access_token : null,
+            nombre: data.user.email.split('@')[0],
+            rol: 'client',
+            mensaje: sesionActiva ? 'Registro exitoso' : 'Registro exitoso. Por favor revisa tu correo para confirmar tu cuenta.'
+        });
+    } catch (e) {
+        console.error('❌ ERROR EN REGISTRO:', e.message || e);
+        res.status(500).json({ error: 'Error interno al registrar la cuenta.' });
+    }
+});
+
+// Endpoint de Iniciar Sesión Híbrido (Admin y Cliente)
 app.post('/api/auth/login', limiteLogin, async (req, res) => {
     const { usuario, password } = req.body || {};
     if (!esTextoValido(usuario, 100) || !esTextoValido(password, 200)) {
-        return res.status(400).json({ error: 'Usuario y contraseña son obligatorios.' });
+        return res.status(400).json({ error: 'Usuario o correo y contraseña son obligatorios.' });
     }
 
     const usuarioNormalizado = usuario.trim();
@@ -441,7 +618,47 @@ app.post('/api/auth/login', limiteLogin, async (req, res) => {
         return res.status(429).json({ error: 'Cuenta bloqueada temporalmente por demasiados intentos fallidos. Intenta en 15 minutos.' });
     }
 
+    // ── 1. LOGIN DE CLIENTE: Si tiene "@", se inicia con Supabase Auth ──
+    if (usuarioNormalizado.includes('@')) {
+        if (isMockDb) {
+            console.log(`🔐 LOGIN SIMULADO (USER): ${usuarioNormalizado}`);
+            const tokenSimulado = `mock_user_token_${Buffer.from(usuarioNormalizado).toString('base64')}`;
+            return res.json({ token: tokenSimulado, nombre: usuarioNormalizado.split('@')[0], rol: 'client' });
+        }
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: usuarioNormalizado,
+                password: password
+            });
+            if (error) {
+                registrarFalloLogin(usuarioNormalizado);
+                return res.status(401).json({ error: error.message || 'Credenciales incorrectas.' });
+            }
+            intentosLogin.delete(usuarioNormalizado);
+            console.log(`🔐 LOGIN EXITOSO (SUPABASE USER): ${usuarioNormalizado}`);
+            return res.json({
+                token: data.session.access_token,
+                nombre: data.user.email.split('@')[0],
+                rol: 'client',
+                expira_en: new Date(Date.now() + data.session.expires_in * 1000).toISOString()
+            });
+        } catch (e) {
+            console.error('❌ ERROR EN LOGIN SUPABASE USER:', e.message || e);
+            return res.status(500).json({ error: 'Error interno al iniciar sesión.' });
+        }
+    }
+
+    // ── 2. LOGIN DE ADMINISTRADOR: Bcrypt / usuarios_admin ──
     try {
+        if (isMockDb) {
+            if (usuarioNormalizado === 'admin' && password === 'admin') {
+                console.log(`🔐 LOGIN SIMULADO (ADMIN): ${usuarioNormalizado}`);
+                return res.json({ token: 'mock_admin_token', nombre: 'Administrador Mock', rol: 'admin' });
+            }
+            registrarFalloLogin(usuarioNormalizado);
+            return res.status(401).json({ error: 'Credenciales incorrectas.' });
+        }
+
         const { data: cuenta, error } = await supabase
             .from('usuarios_admin')
             .select('id, usuario, password_hash, nombre, rol, activo')
@@ -450,8 +667,6 @@ app.post('/api/auth/login', limiteLogin, async (req, res) => {
 
         if (error) throw error;
 
-        // Siempre se ejecuta una comparación bcrypt (real o señuelo) para que el
-        // tiempo de respuesta no delate si el usuario existe.
         const hashAComparar = (cuenta && cuenta.activo) ? cuenta.password_hash : HASH_SENUELO;
         const coincide = await bcrypt.compare(password, hashAComparar) && !!(cuenta && cuenta.activo);
 
@@ -469,12 +684,55 @@ app.post('/api/auth/login', limiteLogin, async (req, res) => {
             .insert({ usuario_id: cuenta.id, token: hashToken(token), expira_en: expira });
         if (errorSesion) throw errorSesion;
 
-        console.log(`🔐 LOGIN EXITOSO: ${cuenta.usuario} (${cuenta.rol})`);
+        console.log(`🔐 LOGIN EXITOSO (ADMIN): ${cuenta.usuario} (${cuenta.rol})`);
         res.json({ token, nombre: cuenta.nombre, rol: cuenta.rol, expira_en: expira });
     } catch (e) {
-        console.error('❌ ERROR EN LOGIN:', e.message || e);
+        console.error('❌ ERROR EN LOGIN ADMIN:', e.message || e);
         res.status(500).json({ error: 'Error interno al iniciar sesión.' });
     }
+});
+
+// Endpoint para iniciar el flujo de Google OAuth
+app.get('/api/auth/google', async (req, res) => {
+    if (isMockDb) {
+        const mockCallbackUrl = `/api/auth/callback?access_token=mock_user_token_google&refresh_token=mock_refresh_token`;
+        return res.json({ url: mockCallbackUrl });
+    }
+    try {
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: `${req.protocol}://${req.get('host')}/api/auth/callback`
+            }
+        });
+        if (error) throw error;
+        res.json({ url: data.url });
+    } catch (e) {
+        console.error('❌ ERROR EN GOOGLE OAUTH:', e.message || e);
+        res.status(500).json({ error: 'Error iniciando flujo de Google OAuth.' });
+    }
+});
+
+// Endpoint de Callback para Google OAuth (PKCE y Mock)
+app.get('/api/auth/callback', async (req, res) => {
+    const code = req.query.code;
+    
+    if (isMockDb) {
+        const accessToken = req.query.access_token || 'mock_user_token_google';
+        return res.redirect(`/#access_token=${accessToken}`);
+    }
+
+    if (code) {
+        try {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+            if (error) throw error;
+            return res.redirect(`/#access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}`);
+        } catch (e) {
+            console.error('❌ ERROR EN CALLBACK OAUTH:', e.message || e);
+            return res.redirect('/#error=oauth_callback_failed');
+        }
+    }
+    res.redirect('/');
 });
 
 app.post('/api/auth/logout', requiereAuth, async (req, res) => {

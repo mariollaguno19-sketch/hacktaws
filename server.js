@@ -127,16 +127,36 @@ if (!isMockGemini) {
     ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 }
 
-// Helper para obtener el cliente de IA activo (real de Google o Mock simulado)
+// Helper para obtener el cliente de IA activo (real de Google o Mock simulado).
+// SEGURIDAD: la API key de Gemini SOLO vive en el .env del servidor. Ya no se
+// aceptan claves enviadas por el navegador (cabecera x-gemini-key eliminada):
+// pedir a usuarios que peguen su API key en una web es una mala práctica.
 function getAIClient(req) {
-    const clientKey = req.headers['x-gemini-key'];
-    if (clientKey && clientKey.trim() && clientKey !== 'tu_api_key_aqui') {
-        return new GoogleGenAI({ apiKey: clientKey.trim() });
-    }
-    if (!isMockGemini && process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() && process.env.GEMINI_API_KEY !== 'tu_api_key_aqui') {
+    const synapseAiActive = req.headers['x-synapse-ai'] === 'true';
+    if (synapseAiActive && process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() && process.env.GEMINI_API_KEY !== 'tu_api_key_aqui') {
         return ai;
     }
     return mockAiClient;
+}
+
+// ── Cookies de sesión (httpOnly: el token de admin nunca es accesible desde JS) ──
+function leerCookie(req, nombre) {
+    const crudo = req.headers.cookie || '';
+    for (const par of crudo.split(';')) {
+        const [k, ...v] = par.trim().split('=');
+        if (k === nombre) return decodeURIComponent(v.join('='));
+    }
+    return null;
+}
+
+function setCookieSesion(req, res, token, maxAgeSeg) {
+    const seguro = req.secure || req.headers['x-forwarded-proto'] === 'https' ? '; Secure' : '';
+    res.append('Set-Cookie',
+        `crm_sesion=${encodeURIComponent(token)}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${maxAgeSeg}${seguro}`);
+}
+
+function limpiarCookieSesion(req, res) {
+    setCookieSesion(req, res, '', 0);
 }
 
 // ── Cliente Supabase con clave secreta (solo vive en el servidor, nunca llega al navegador) ──
@@ -455,8 +475,11 @@ const HASH_SENUELO = bcrypt.hashSync(crypto.randomBytes(16).toString('hex'), 10)
 
 // ── Middleware de autenticación (token Bearer híbrido: Supabase Auth + tabla sesiones) ──
 async function requiereAuth(req, res, next) {
+    // Prioridad 1: cookie httpOnly (sesión de admin — inaccesible desde JS).
+    // Prioridad 2: Bearer (tokens de cliente de Supabase Auth / OAuth).
     const encabezado = req.headers.authorization || '';
-    const token = encabezado.startsWith('Bearer ') ? encabezado.slice(7) : null;
+    const token = leerCookie(req, 'crm_sesion')
+        || (encabezado.startsWith('Bearer ') ? encabezado.slice(7) : null);
     if (!token || token.length > 2000) { // Supabase access tokens are longer JWTs
         return res.status(401).json({ error: 'Sesión no válida. Inicia sesión nuevamente.' });
     }
@@ -653,6 +676,7 @@ app.post('/api/auth/login', limiteLogin, async (req, res) => {
         if (isMockDb) {
             if (usuarioNormalizado === 'admin' && password === 'admin') {
                 console.log(`🔐 LOGIN SIMULADO (ADMIN): ${usuarioNormalizado}`);
+                setCookieSesion(req, res, 'mock_admin_token', SESION_DURACION_MS / 1000);
                 return res.json({ token: 'mock_admin_token', nombre: 'Administrador Mock', rol: 'admin' });
             }
             registrarFalloLogin(usuarioNormalizado);
@@ -685,6 +709,7 @@ app.post('/api/auth/login', limiteLogin, async (req, res) => {
         if (errorSesion) throw errorSesion;
 
         console.log(`🔐 LOGIN EXITOSO (ADMIN): ${cuenta.usuario} (${cuenta.rol})`);
+        setCookieSesion(req, res, token, SESION_DURACION_MS / 1000);
         res.json({ token, nombre: cuenta.nombre, rol: cuenta.rol, expira_en: expira });
     } catch (e) {
         console.error('❌ ERROR EN LOGIN ADMIN:', e.message || e);
@@ -737,9 +762,13 @@ app.get('/api/auth/callback', async (req, res) => {
 
 app.post('/api/auth/logout', requiereAuth, async (req, res) => {
     try {
-        await supabase.from('sesiones').delete().eq('id', req.sesionId);
+        if (req.sesionId) {
+            await supabase.from('sesiones').delete().eq('id', req.sesionId);
+        }
+        limpiarCookieSesion(req, res);
         res.json({ success: true });
     } catch (e) {
+        limpiarCookieSesion(req, res);
         res.status(500).json({ error: 'No se pudo cerrar la sesión.' });
     }
 });

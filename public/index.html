@@ -2067,6 +2067,86 @@
             border-bottom-right-radius: 24px;
             line-height: 1.4;
         }
+
+        /* ── Estilos de Formularios e Inputs Globales (Uniforme y Premium) ── */
+        input[type="text"], input[type="password"], input[type="email"], textarea, select {
+            width: 100% !important;
+            box-sizing: border-box !important;
+            padding: 12px 16px !important;
+            border-radius: 12px !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            background: rgba(15, 23, 42, 0.5) !important;
+            color: #ffffff !important;
+            font-family: inherit !important;
+            font-size: 14px !important;
+            outline: none !important;
+            transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s !important;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus, textarea:focus, select:focus {
+            border-color: var(--brand-primary) !important;
+            box-shadow: 0 0 0 3px rgba(197, 248, 42, 0.15) !important;
+            background: rgba(15, 23, 42, 0.8) !important;
+        }
+
+        /* ── Scrollbars ultra-delgados y premium ── */
+        ::-webkit-scrollbar {
+            width: 6px !important;
+            height: 6px !important;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(9, 13, 22, 0.3) !important;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-radius: 9999px !important;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(197, 248, 42, 0.4) !important;
+        }
+        
+        /* Para firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.12) rgba(9, 13, 22, 0.3);
+        }
+
+        /* ── Tema Synapse AI Activado (Efecto Google Search AI) ── */
+        body.synapse-ai-active {
+            background: radial-gradient(circle at 50% 0%, rgba(168, 85, 247, 0.12), rgba(56, 189, 248, 0.08) 35%, #090d16 70%) !important;
+            transition: background 0.6s ease-in-out !important;
+        }
+
+        body.synapse-ai-active header {
+            box-shadow: 0 1px 15px rgba(168, 85, 247, 0.15) !important;
+            border-bottom-color: rgba(168, 85, 247, 0.3) !important;
+        }
+
+        body.synapse-ai-active .bento-card,
+        body.synapse-ai-active .widget-card,
+        body.synapse-ai-active .lead-card,
+        body.synapse-ai-active .chat-bento-card,
+        body.synapse-ai-active .bento-sidebar-card {
+            border-color: rgba(168, 85, 247, 0.35) !important;
+            box-shadow: 0 8px 32px rgba(168, 85, 247, 0.05), 0 0 8px rgba(168, 85, 247, 0.1) !important;
+        }
+
+        body.synapse-ai-active .bento-card:hover,
+        body.synapse-ai-active .widget-card:hover,
+        body.synapse-ai-active .lead-card:hover,
+        body.synapse-ai-active .bento-sidebar-card:hover {
+            border-color: var(--brand-primary) !important;
+            box-shadow: 0 14px 34px rgba(197, 248, 42, 0.15), 0 0 12px rgba(197, 248, 42, 0.25) !important;
+        }
+
+        body.synapse-ai-active .synapse-circle {
+            border-color: #a855f7 !important;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.6) !important;
+        }
+        body.synapse-ai-active .synapse-core {
+            background: #a855f7 !important;
+            box-shadow: 0 0 10px rgba(168, 85, 247, 0.8) !important;
+        }
     </style>
 </head>
 <body>
@@ -2080,34 +2160,10 @@
             </div>
             <span style="font-size: 20px; font-weight: 700; letter-spacing: 0.05em; color: #ffffff;">SYNAPSE</span>
         </div>
-        <button class="synapse-toggle-btn" id="synapse-toggle-btn" onclick="openSynapseModal()">
+        <button class="synapse-toggle-btn" id="synapse-toggle-btn" onclick="toggleSynapseAi()">
             <span class="pulse-dot"></span> Activa Synapse
         </button>
     </header>
-
-    <!-- Modal Activa Synapse -->
-    <div class="modal-overlay" id="synapse-modal">
-        <div class="modal-card">
-            <button class="modal-close-btn" onclick="closeSynapseModal()">✕</button>
-            <h3>Activar Synapse AI</h3>
-            <p>Conecta el motor de Google Gemini 3.5 Flash en tiempo real para chatear con el tutor inteligente y desbloquear auditorías profundas de leads.</p>
-            
-            <div class="status-badge mock" id="synapse-status-badge">Modo Simulado (Mock)</div>
-            
-            <div class="modal-input-group">
-                <label for="user-gemini-key">API Key de Google AI Studio (Opcional):</label>
-                <input type="text" id="user-gemini-key" placeholder="AIzaSy..." style="width: 100%; margin-bottom: 8px;">
-                <small style="color: #64748b; font-size: 11px; display: block; margin-top: 4px; text-align: left;">
-                    Tu API Key no se guarda en el servidor. Se almacena temporalmente en la sesión de tu navegador de forma segura. Consigue una en <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#c5f82a; text-decoration:none;">Google AI Studio</a>.
-                </small>
-            </div>
-            
-            <div style="display: flex; gap: 12px; margin-top: 24px;">
-                <button class="btn-pill btn-pill-dark" style="flex: 1;" onclick="deactivateSynapse()">Usar Simulador</button>
-                <button class="btn-pill" style="flex: 1; background: #c5f82a; color: #000000;" onclick="activateSynapse()">Activar Gemini</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Drawer de Auditoría Avanzada Synapse AI -->
     <div class="drawer-overlay" id="audit-drawer">
@@ -2152,7 +2208,7 @@
                 <!-- Se inyecta dinámicamente según la vista -->
             </div>
             <div class="guide-footer-tip">
-                Tip: Haz clic en el botón superior "Activa Synapse" para alternar entre simulación y respuestas reales de Gemini.
+                Tip: El indicador superior muestra el motor de IA en uso. Por seguridad, la conexión a Gemini se configura en el servidor (archivo .env), nunca desde el navegador.
             </div>
         </div>
     </div>
@@ -2221,7 +2277,7 @@
                     <div class="card-title-area">
                         <div style="font-size: 11px; font-weight: 700; color: #c5f82a; text-transform: uppercase; margin-bottom: 6px;">Portal Ejecutivo</div>
                         <h2>Bandeja de Gestión CRM</h2>
-                        <p>Supervisa leads calificados, resuelve objeciones y corre auditorías de IA. Acceso de demostración: <code>admin</code> / <code>admin</code> <em>(solo demo — en producción: contraseñas bcrypt, tokens hasheados y bloqueo anti fuerza bruta)</em>.</p>
+                        <p>Supervisa leads calificados, resuelve objeciones y corre auditorías de IA. Las credenciales de evaluación están documentadas en el README del repositorio.</p>
                     </div>
                     <button class="btn-pill" onclick="navigateTo('admin')">Ingresar como Asesor →</button>
                 </div>
@@ -2270,7 +2326,7 @@
                     <details class="faq-item">
                         <summary>¿Cómo activo Gemini en modo Real en lugar de Simulado?</summary>
                         <div class="faq-content">
-                            Para cambiar del modo simulado local al motor real de IA de Google, haz clic en el botón superior <strong>"Activa Synapse"</strong>. Se abrirá un panel donde puedes ingresar tu clave API (API Key) personal de Google AI Studio. Esta clave se guardará localmente en tu sesión para enrutar todas las consultas de chat y reportes comerciales avanzados directamente con el modelo Gemini 3.5 Flash.
+                            Por diseño de seguridad, la clave API de Gemini vive únicamente en el servidor: agrega tu <code>GEMINI_API_KEY</code> de Google AI Studio en el archivo <code>.env</code> y reinicia el servidor. El sistema detecta la clave automáticamente y cambia del modo simulado al motor real de Gemini 3.5 Flash. Nunca se pide ni se acepta una API key desde el navegador.
                         </div>
                     </details>
                     <details class="faq-item">
@@ -2340,14 +2396,14 @@
                         <h2 id="auth-title" style="margin-top: 10px;">Iniciar Sesión</h2>
                         <p id="auth-desc" style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">Ingrese su cuenta para chatear con nuestro asesor virtual.</p>
                         
-                        <div class="form-group" style="margin-bottom: 12px; text-align: left;">
-                            <label for="user-email" style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Correo Electrónico</label>
-                            <input type="email" id="user-email" placeholder="correo@ejemplo.com" style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff;">
+                        <div class="form-group">
+                            <label for="user-email">Correo Electrónico</label>
+                            <input type="email" id="user-email" placeholder="correo@ejemplo.com">
                         </div>
                         
-                        <div class="form-group" style="margin-bottom: 16px; text-align: left;">
-                            <label for="user-password" style="font-size: 12px; color: var(--text-muted); display: block; margin-bottom: 6px;">Contraseña</label>
-                            <input type="password" id="user-password" placeholder="••••••••" style="width: 100%; box-sizing: border-box; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff;">
+                        <div class="form-group">
+                            <label for="user-password">Contraseña</label>
+                            <input type="password" id="user-password" placeholder="••••••••">
                         </div>
 
                         <!-- Checkbox de Consentimiento de Datos Personales (Compliance) -->
@@ -2697,7 +2753,7 @@
             } else if (viewName === 'admin') {
                 document.getElementById('admin-view').classList.add('active');
                 document.getElementById('tab-admin').classList.add('active');
-                if (obtenerToken()) {
+                if (haySesionAdmin()) {
                     mostrarDashboard();
                 } else {
                     mostrarLogin();
@@ -2859,14 +2915,10 @@
             chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
-                const headers = { 'Content-Type': 'application/json' };
-                const userGeminiKey = sessionStorage.getItem('gemini_api_key');
-                if (userGeminiKey) {
-                    headers['X-Gemini-Key'] = userGeminiKey;
-                }
+                // La API key de Gemini vive solo en el servidor (.env); el navegador nunca la maneja
                 const response = await fetch('/api/chat', {
                     method: 'POST',
-                    headers: headers,
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ message: text, previous_id: currentInteractionId })
                 });
                 
@@ -2923,14 +2975,9 @@
             finishBtn.innerText = "Procesando perfil y transmitiendo...";
 
             try {
-                const headers = { 'Content-Type': 'application/json' };
-                const userGeminiKey = sessionStorage.getItem('gemini_api_key');
-                if (userGeminiKey) {
-                    headers['X-Gemini-Key'] = userGeminiKey;
-                }
                 const res = await fetch('/api/evaluate', {
                     method: 'POST',
-                    headers: headers,
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: currentEmail, history: chatHistoryBackup })
                 });
                 const data = await res.json();
@@ -2967,29 +3014,41 @@
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // LÓGICA DEL PORTAL DEL ADMINISTRADOR
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        // SEGURIDAD: la sesión de admin viaja en una cookie httpOnly que JavaScript
+        // no puede leer (mitiga robo de sesión por XSS). En sessionStorage solo se
+        // guarda el nombre para mostrar y una bandera de UI (no son secretos).
         function obtenerToken() {
+            // Solo tokens de CLIENTE (Supabase Auth / OAuth). El token de admin ya no existe en JS.
             return sessionStorage.getItem('crm_token');
         }
 
+        function haySesionAdmin() {
+            return sessionStorage.getItem('crm_admin') === '1';
+        }
+
         function guardarSesion(datos) {
-            sessionStorage.setItem('crm_token', datos.token);
+            sessionStorage.setItem('crm_admin', '1');
             sessionStorage.setItem('crm_nombre', datos.nombre || 'Ejecutivo');
         }
 
         function limpiarSesion() {
+            sessionStorage.removeItem('crm_admin');
             sessionStorage.removeItem('crm_token');
             sessionStorage.removeItem('crm_nombre');
         }
 
         async function fetchAutenticado(url, opciones = {}) {
-            const headers = Object.assign({}, opciones.headers, {
-                'Authorization': `Bearer ${obtenerToken()}`
-            });
-            const userGeminiKey = sessionStorage.getItem('gemini_api_key');
-            if (userGeminiKey) {
-                headers['X-Gemini-Key'] = userGeminiKey;
+            const headers = Object.assign({}, opciones.headers);
+            // La cookie httpOnly de admin viaja sola; el Bearer es solo para tokens de cliente
+            const tokenCliente = obtenerToken();
+            if (tokenCliente) {
+                headers['Authorization'] = `Bearer ${tokenCliente}`;
+            }
+            if (sessionStorage.getItem('synapse_ai_active') === 'true') {
+                headers['X-Synapse-AI'] = 'true';
             }
             opciones.headers = headers;
+            opciones.credentials = 'same-origin';
             const res = await fetch(url, opciones);
             if (res.status === 401) {
                 limpiarSesion();
@@ -3420,7 +3479,7 @@
                 <ol class="guide-step-list">
                     <li>Elige por dónde empezar.</li>
                     <li>Entra a <strong>Habla con tu asesor IA</strong> y simula ser un prospecto interesado en invertir.</li>
-                    <li>O entra al <strong>Panel del Ejecutivo</strong> con el acceso de demostración (usuario: <code>admin</code> / clave: <code>admin</code>) para gestionar los prospectos como asesor. En producción, el acceso usa contraseñas cifradas y bloqueo por intentos fallidos.</li>
+                    <li>O entra al <strong>Panel del Ejecutivo</strong> con las credenciales de evaluación documentadas en el README del repositorio. El acceso usa contraseñas cifradas con bcrypt, sesiones httpOnly y bloqueo por intentos fallidos.</li>
                 </ol>
             `,
             client: `

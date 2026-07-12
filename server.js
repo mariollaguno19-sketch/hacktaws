@@ -58,6 +58,18 @@ const mockAiClient = {
                 const agresivo = /agresivo|acciones|alto riesgo|r[aá]pido|crypto/i.test(texto);
                 const urgente = /este mes|ya|ahora|pronto|inmediat|urgent/i.test(texto);
 
+                const horizonte = urgente ? "Corto Plazo (1-3 meses)" : "Mediano Plazo (2-5 años)";
+                let distribucion = { renta_fija: 50, fondos_mutuos: 35, fideicomisos: 10, efectivo: 5 };
+                let justificacion = "El perfil moderado y horizonte sugeridos permiten estructurar un portafolio equilibrado entre renta fija y fondos mutuos de crecimiento.";
+                
+                if (conservador) {
+                    distribucion = { renta_fija: 80, fondos_mutuos: 0, fideicomisos: 10, efectivo: 10 };
+                    justificacion = "Prioridad en preservación de capital: concentración en renta fija y pólizas garantizadas con un 10% en efectivo líquido.";
+                } else if (agresivo) {
+                    distribucion = { renta_fija: 10, fondos_mutuos: 60, fideicomisos: 25, efectivo: 5 };
+                    justificacion = "Perfil agresivo orientado al crecimiento patrimonial. Foco en fondos de renta variable con fideicomisos inmobiliarios adicionales.";
+                }
+
                 const responseObj = {
                     correo_cliente: email,
                     tipo_cliente: esEmpresa ? "B2B" : "B2C",
@@ -71,7 +83,10 @@ const mockAiClient = {
                     objeciones_detectadas: monto ? ["Quiere confirmar tasas vigentes con un asesor"] : ["Aún no define el monto a invertir"],
                     accion_sugerida_ejecutivo: urgente
                         ? "Contactar hoy mismo: el cliente quiere comenzar de inmediato. Preparar propuesta preliminar."
-                        : "Agendar llamada esta semana para presentar portafolio acorde a su perfil."
+                        : "Agendar llamada esta semana para presentar portafolio acorde a su perfil.",
+                    horizonte_inversion: horizonte,
+                    portafolio_distribucion: distribucion,
+                    portafolio_justificacion: justificacion
                 };
 
                 return {
@@ -175,7 +190,10 @@ if (isMockDb) {
             resumen_necesidad: "Clínica privada busca invertir excedentes de caja (~$95,300) con disponibilidad semestral. Decisión en el directorio de este mes.",
             objeciones_detectadas: ["Necesita aprobación del directorio", "Pregunta por liquidez semestral"],
             accion_sugerida_ejecutivo: "Contactar hoy: preparar propuesta corporativa con escenarios de liquidez para el directorio.",
-            estado_aprobacion: "Pendiente", creado_en: haceMin(32)
+            estado_aprobacion: "Pendiente", creado_en: haceMin(32),
+            horizonte_inversion: "Mediano Plazo (3-5 años)",
+            portafolio_distribucion: { renta_fija: 50, fondos_mutuos: 30, fideicomisos: 15, efectivo: 5 },
+            portafolio_justificacion: "La clínica tiene excedentes y busca estabilidad (renta fija corporativa) combinada con crecimiento moderado en fondos de inversión, preservando un 5% líquido para contingencias operativas."
         },
         {
             id: "d1a2b3c4-0002-4a1b-9c2d-100000000002",
@@ -186,7 +204,10 @@ if (isMockDb) {
             resumen_necesidad: "Grupo comercial con $148,500 de excedente estacional. Prioriza proteger capital; horizonte de 9 a 12 meses.",
             objeciones_detectadas: ["Compara tasas con otro banco", "Sensible a penalidades por retiro anticipado"],
             accion_sugerida_ejecutivo: "Enviar comparativo de tasas y agendar reunión con la CFO esta semana.",
-            estado_aprobacion: "Pendiente", creado_en: haceMin(60 * 3)
+            estado_aprobacion: "Pendiente", creado_en: haceMin(60 * 3),
+            horizonte_inversion: "Corto Plazo (9-12 meses)",
+            portafolio_distribucion: { renta_fija: 70, fondos_mutuos: 0, fideicomisos: 0, efectivo: 30 },
+            portafolio_justificacion: "Debido al corto plazo y la alta sensibilidad a retiros, se priorizan depósitos de acumulación garantizados y un 30% en fondos líquidos de mercado monetario para retiros rápidos."
         },
         {
             id: "d1a2b3c4-0003-4a1b-9c2d-100000000003",
@@ -198,7 +219,10 @@ if (isMockDb) {
             objeciones_detectadas: ["Primera vez invirtiendo, pide acompañamiento"],
             accion_sugerida_ejecutivo: "Agendar videollamada introductoria y compartir guía para primeros inversionistas.",
             estado_aprobacion: "✅ APROBADO (Enviado al cliente)",
-            asesor_asignado: "María Pérez", creado_en: haceMin(60 * 26)
+            asesor_asignado: "María Pérez", creado_en: haceMin(60 * 26),
+            horizonte_inversion: "Largo Plazo (más de 5 años)",
+            portafolio_distribucion: { renta_fija: 20, fondos_mutuos: 50, fideicomisos: 25, efectivo: 5 },
+            portafolio_justificacion: "Al tratarse de una herencia con un horizonte a largo plazo y perfil moderado-agresivo, se asigna 50% a fondos mutuos de renta variable global y 25% a fideicomisos inmobiliarios estables, dejando un 20% en renta fija defensiva."
         },
         {
             id: "d1a2b3c4-0004-4a1b-9c2d-100000000004",
@@ -210,7 +234,10 @@ if (isMockDb) {
             objeciones_detectadas: ["Desconfía de instrumentos que no conoce"],
             accion_sugerida_ejecutivo: "Proponer plazo fijo renovable a 90 días y explicar cobertura del seguro de depósitos.",
             estado_aprobacion: "✏️ EDITADO POR EJECUTIVO",
-            asesor_asignado: "Jorge Salinas", creado_en: haceMin(60 * 49)
+            asesor_asignado: "Jorge Salinas", creado_en: haceMin(60 * 49),
+            horizonte_inversion: "Corto Plazo (3-6 meses)",
+            portafolio_distribucion: { renta_fija: 80, fondos_mutuos: 0, fideicomisos: 0, efectivo: 20 },
+            portafolio_justificacion: "La empresa familiar prioriza proteger el capital a plazos muy cortos. Se propone 80% en pólizas acumulativas de 90 días renovables y 20% en caja líquida."
         },
         {
             id: "d1a2b3c4-0005-4a1b-9c2d-100000000005",
@@ -221,7 +248,10 @@ if (isMockDb) {
             resumen_necesidad: "Empleado público; ahorra $8,700 y quiere una póliza a 12 meses sin riesgo.",
             objeciones_detectadas: ["Pregunta si puede retirar antes del plazo"],
             accion_sugerida_ejecutivo: "Llamar y explicar condiciones de precancelación antes de enviar la solicitud.",
-            estado_aprobacion: "Pendiente", creado_en: haceMin(60 * 54)
+            estado_aprobacion: "Pendiente", creado_en: haceMin(60 * 54),
+            horizonte_inversion: "Corto Plazo (12 meses)",
+            portafolio_distribucion: { renta_fija: 90, fondos_mutuos: 0, fideicomisos: 0, efectivo: 10 },
+            portafolio_justificacion: "Ahorro personal de bajo riesgo a un año. Se asigna 90% a póliza acumulativa para asegurar tasa y 10% disponible."
         },
         {
             id: "d1a2b3c4-0006-4a1b-9c2d-100000000006",
@@ -232,7 +262,10 @@ if (isMockDb) {
             resumen_necesidad: "Estudiante universitario; quiere aprender sobre inversiones pero aún no tiene capital disponible.",
             objeciones_detectadas: ["Sin fondos disponibles por ahora"],
             accion_sugerida_ejecutivo: "Incluir en el boletín educativo y recontactar en 6 meses.",
-            estado_aprobacion: "❌ RECHAZADO", creado_en: haceMin(60 * 76)
+            estado_aprobacion: "❌ RECHAZADO", creado_en: haceMin(60 * 76),
+            horizonte_inversion: "Por determinar",
+            portafolio_distribucion: { renta_fija: 0, fondos_mutuos: 0, fideicomisos: 0, efectivo: 0 },
+            portafolio_justificacion: "Prospecto en etapa de nutrición y aprendizaje sin capital disponible por el momento. No se propone portafolio activo."
         }
     ];
     const sesionesDb = [];
@@ -839,7 +872,7 @@ app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
 
     try {
         const prompt = `
-        Eres un analista de pre-ventas. Analiza el siguiente historial de conversación con el cliente de correo "${correo}" y extrae su perfil comercial.
+        Eres un analista de pre-ventas y perfilador de inversiones. Analiza el siguiente historial de conversación con el cliente de correo "${correo}" y extrae su perfil comercial y de inversión, proponiendo además un portafolio adaptado a sus necesidades.
         HISTORIAL:
         ${JSON.stringify(historialLimpio)}
 
@@ -849,6 +882,9 @@ app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
         - "monto_estimado": número en dólares que el cliente mencionó o insinuó; si no hay dato, usa null.
         - "nivel_riesgo": uno de "Conservador", "Moderado", "Agresivo" o "Por determinar".
         - "telefono": solo si el cliente lo dio; si no, null.
+        - "horizonte_inversion": Estimado de tiempo que el cliente planea mantener invertido su dinero (ej: "Corto Plazo (3-6 meses)", "Mediano Plazo (1-3 años)", "Largo Plazo (más de 5 años)").
+        - "portafolio_distribucion": Distribución porcentual recomendada basada en su riesgo. Debe ser un objeto JSON con EXACTAMENTE estas 4 claves numéricas enteras: "renta_fija", "fondos_mutuos", "fideicomisos", "efectivo". La suma de los 4 valores DEBE dar exactamente 100.
+        - "portafolio_justificacion": Racional claro de 1 o 2 oraciones justificando esta asignación de activos en base a las preferencias y objeciones que mencionó el cliente.
 
         Responde ESTRICTAMENTE con un JSON válido, sin texto adicional ni markdown:
         {
@@ -862,7 +898,15 @@ app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
             "etapa_embudo": "Listo para asesor",
             "resumen_necesidad": "Resumen claro de lo que busca el cliente y el monto",
             "objeciones_detectadas": ["Duda o temor 1"],
-            "accion_sugerida_ejecutivo": "Acción clara para el asesor (ej. Agendar reunión para presentar portafolio)"
+            "accion_sugerida_ejecutivo": "Acción clara para el asesor (ej. Agendar reunión para presentar portafolio)",
+            "horizonte_inversion": "Mediano Plazo (1-3 años)",
+            "portafolio_distribucion": {
+                "renta_fija": 50,
+                "fondos_mutuos": 30,
+                "fideicomisos": 15,
+                "efectivo": 5
+            },
+            "portafolio_justificacion": "Se propone una mezcla equilibrada debido a su horizonte a mediano plazo y su interés en combinar crecimiento y estabilidad."
         }`;
 
         const dynamicAi = getAIClient(req);
@@ -886,6 +930,43 @@ app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
         const telefonoLimpio = esTextoValido(datosIA.telefono, 30)
             ? datosIA.telefono.replace(/[^\d+()\-\s]/g, '').trim().slice(0, 30) || null
             : null;
+
+        // Normalizar nuevos campos del portafolio
+        const horiz = esTextoValido(datosIA.horizonte_inversion, 100) ? datosIA.horizonte_inversion : 'Por determinar';
+        let dist = { renta_fija: 0, fondos_mutuos: 0, fideicomisos: 0, efectivo: 0 };
+        if (datosIA.portafolio_distribucion && typeof datosIA.portafolio_distribucion === 'object') {
+            const rf = Math.round(Number(datosIA.portafolio_distribucion.renta_fija)) || 0;
+            const fm = Math.round(Number(datosIA.portafolio_distribucion.fondos_mutuos)) || 0;
+            const fd = Math.round(Number(datosIA.portafolio_distribucion.fideicomisos)) || 0;
+            const ef = Math.round(Number(datosIA.portafolio_distribucion.efectivo)) || 0;
+            dist = {
+                renta_fija: Math.min(100, Math.max(0, rf)),
+                fondos_mutuos: Math.min(100, Math.max(0, fm)),
+                fideicomisos: Math.min(100, Math.max(0, fd)),
+                efectivo: Math.min(100, Math.max(0, ef))
+            };
+            const suma = dist.renta_fija + dist.fondos_mutuos + dist.fideicomisos + dist.efectivo;
+            if (suma > 0 && suma !== 100) {
+                const factor = 100 / suma;
+                dist.renta_fija = Math.round(dist.renta_fija * factor);
+                dist.fondos_mutuos = Math.round(dist.fondos_mutuos * factor);
+                dist.fideicomisos = Math.round(dist.fideicomisos * factor);
+                dist.efectivo = 100 - (dist.renta_fija + dist.fondos_mutuos + dist.fideicomisos);
+            }
+        } else {
+            const riesgo = RIESGOS_VALIDOS.includes(datosIA.nivel_riesgo) ? datosIA.nivel_riesgo : 'Moderado';
+            if (riesgo === 'Conservador') {
+                dist = { renta_fija: 80, fondos_mutuos: 0, fideicomisos: 10, efectivo: 10 };
+            } else if (riesgo === 'Agresivo') {
+                dist = { renta_fija: 10, fondos_mutuos: 60, fideicomisos: 25, efectivo: 5 };
+            } else {
+                dist = { renta_fija: 50, fondos_mutuos: 30, fideicomisos: 15, efectivo: 5 };
+            }
+        }
+        const justif = esTextoValido(datosIA.portafolio_justificacion, 2000)
+            ? datosIA.portafolio_justificacion
+            : 'Asignación recomendada basada en el perfil de riesgo detectado durante la interacción conversacional.';
+
         const lead = {
             correo_cliente: correo,
             tipo_cliente: esTextoValido(datosIA.tipo_cliente, 50) ? datosIA.tipo_cliente : 'Por clasificar',
@@ -903,15 +984,42 @@ app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
                 ? datosIA.accion_sugerida_ejecutivo
                 : 'Contactar al cliente para evaluar necesidades.',
             estado_aprobacion: 'Pendiente',
-            historial: historialLimpio
+            historial: historialLimpio,
+            horizonte_inversion: horiz,
+            portafolio_distribucion: dist,
+            portafolio_justificacion: justif
         };
 
-        const { data: guardado, error } = await supabase
+        let guardado;
+        const dbResult = await supabase
             .from('leads')
             .insert(lead)
             .select()
-            .single();
-        if (error) throw error;
+            .maybeSingle();
+
+        if (dbResult.error) {
+            const errMessage = dbResult.error.message || '';
+            const errCode = dbResult.error.code || '';
+            if (errCode === '42703' || errMessage.includes('column') || errMessage.includes('does not exist')) {
+                console.warn('⚠️ Columnas de portafolio no detectadas en Supabase. Reintentando inserción básica...');
+                const leadBasico = { ...lead };
+                delete leadBasico.horizonte_inversion;
+                delete leadBasico.portafolio_distribucion;
+                delete leadBasico.portafolio_justificacion;
+                
+                const retryResult = await supabase
+                    .from('leads')
+                    .insert(leadBasico)
+                    .select()
+                    .single();
+                if (retryResult.error) throw retryResult.error;
+                guardado = retryResult.data;
+            } else {
+                throw dbResult.error;
+            }
+        } else {
+            guardado = dbResult.data;
+        }
 
         console.log(`✅ LEAD GUARDADO EN SUPABASE: ${guardado.correo_cliente} (${guardado.id})`);
         res.json({ success: true, data: guardado });

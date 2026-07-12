@@ -2716,6 +2716,122 @@
             color: var(--bg-color) !important;
             transition: background-color 0.4s, color 0.4s;
         }
+
+        /* ── Estilos Visuales para la propuesta de Portafolio Synapse ── */
+        .portfolio-segment {
+            fill: none;
+            stroke-width: 10;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.8s ease, stroke-dashoffset 0.8s ease;
+        }
+        .portfolio-segment-rf { stroke: #c5f82a; } /* Verde Lima */
+        .portfolio-segment-fm { stroke: #c2f2e9; } /* Menta */
+        .portfolio-segment-fd { stroke: #ffd3e8; } /* Rosa */
+        .portfolio-segment-ef { stroke: #38bdf8; } /* Celeste */
+
+        .portfolio-box {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            background: var(--card-bg) !important;
+            border: 2px solid var(--card-border) !important;
+            box-shadow: var(--card-shadow) !important;
+            border-radius: 20px;
+            padding: 28px;
+            margin-top: 24px;
+            box-sizing: border-box;
+            transition: all 0.4s;
+        }
+
+        .portfolio-split-grid {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 28px;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .portfolio-split-grid {
+                grid-template-columns: 1fr;
+                justify-items: center;
+                text-align: center;
+            }
+        }
+
+        .portfolio-donut-wrapper {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .portfolio-donut-svg {
+            transform: rotate(-90deg);
+            width: 150px;
+            height: 150px;
+        }
+
+        .portfolio-center-text {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .portfolio-center-text .lbl {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .portfolio-center-text .val {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-strong);
+        }
+
+        .portfolio-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .portfolio-table th {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 8px 4px;
+            border-bottom: 2px solid var(--card-border);
+        }
+
+        .portfolio-table td {
+            font-size: 13.5px;
+            padding: 10px 4px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .portfolio-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+
+        .portfolio-rationale-box {
+            padding: 16px 20px;
+            background: var(--card-bg-opacity) !important;
+            border: 2px dashed var(--card-border) !important;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text-color);
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -2777,6 +2893,56 @@
 
                 <!-- CONTENIDO REAL DE AUDITORÍA -->
                 <div id="audit-real-content-container">
+                    <div class="audit-section">
+                        <h4>Propuesta de Portafolio de Inversión</h4>
+                        <!-- Caja del Portafolio propuesta en CRM -->
+                        <div class="portfolio-box" style="padding:16px; margin-top:12px; gap:16px; box-shadow:none;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); padding-bottom:8px;">
+                                <span style="font-size:12px; font-weight:600; color:var(--text-muted);">Horizonte sugerido:</span>
+                                <span id="audit-portfolio-horizon" style="font-size:11px; font-weight:700; color:var(--brand-primary);">Por determinar</span>
+                            </div>
+                            <div class="portfolio-split-grid" style="grid-template-columns: 110px 1fr; gap:16px;">
+                                <div class="portfolio-donut-wrapper" style="width:110px; height:110px;">
+                                    <svg class="portfolio-donut-svg" id="audit-portfolio-donut-svg" viewBox="0 0 40 40" style="width:110px; height:110px;">
+                                        <circle class="donut-bg" cx="20" cy="20" r="15.91549430918954" fill="none" stroke-width="4"></circle>
+                                        <circle class="portfolio-segment portfolio-segment-rf" id="audit-donut-seg-rf" cx="20" cy="20" r="15.91549430918954" fill="none" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                                        <circle class="portfolio-segment portfolio-segment-fm" id="audit-donut-seg-fm" cx="20" cy="20" r="15.91549430918954" fill="none" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                                        <circle class="portfolio-segment portfolio-segment-fd" id="audit-donut-seg-fd" cx="20" cy="20" r="15.91549430918954" fill="none" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                                        <circle class="portfolio-segment portfolio-segment-ef" id="audit-donut-seg-ef" cx="20" cy="20" r="15.91549430918954" fill="none" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                                    </svg>
+                                    <div class="portfolio-center-text">
+                                        <span class="lbl" style="font-size:8px;">Ret. Est.</span>
+                                        <span class="val" id="audit-portfolio-return" style="font-size:15px;">--</span>
+                                    </div>
+                                </div>
+                                <div style="width: 100%;">
+                                    <table class="portfolio-table" style="font-size:12px;">
+                                        <tbody>
+                                            <tr>
+                                                <td><span class="portfolio-legend-dot" style="background:#c5f82a; width:8px; height:8px;"></span>RF</td>
+                                                <td style="text-align:right; font-weight:700;" id="audit-port-pct-rf">0%</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="portfolio-legend-dot" style="background:#c2f2e9; width:8px; height:8px;"></span>FM</td>
+                                                <td style="text-align:right; font-weight:700;" id="audit-port-pct-fm">0%</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="portfolio-legend-dot" style="background:#ffd3e8; width:8px; height:8px;"></span>FD</td>
+                                                <td style="text-align:right; font-weight:700;" id="audit-port-pct-fd">0%</td>
+                                            </tr>
+                                            <tr>
+                                                <td><span class="portfolio-legend-dot" style="background:#38bdf8; width:8px; height:8px;"></span>EF</td>
+                                                <td style="text-align:right; font-weight:700;" id="audit-port-pct-ef">0%</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div style="font-size:12px; line-height:1.45; color:var(--text-muted); margin-top:8px; padding-top:8px; border-top:1px dashed var(--card-border);" id="audit-portfolio-justification">
+                                Justificación comercial...
+                            </div>
+                        </div>
+                    </div>
                     <div class="audit-section">
                         <h4>Psicología y Comportamiento</h4>
                         <p id="audit-behavior">Cargando...</p>
@@ -3121,9 +3287,70 @@
                         </div>
 
                         <div id="finish-container">
-                            <p class="title">Evaluación de perfil completada</p>
-                            <p>Los datos de su perfil de inversión han sido calificados. Puede enviar esta información para que un ejecutivo comercial evalúe su caso.</p>
-                            <button class="btn-success" id="finish-btn" onclick="finishChat()">Transmitir perfil al Ejecutivo Comercial</button>
+                            <p class="title" style="margin-bottom:8px;">Evaluación de Perfil Completada</p>
+                            <p style="color:var(--text-muted); font-size:14px; margin-bottom:20px;">
+                                La inteligencia artificial ha calificado tu perfil y estructurado una propuesta de asignación de activos a tu medida.
+                            </p>
+                            
+                            <!-- Caja del Portafolio propuesta -->
+                            <div class="portfolio-box">
+                                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--card-border); padding-bottom:12px;">
+                                    <h4 style="margin:0; font-size:16px; font-weight:700;">Portafolio Sugerido</h4>
+                                    <span id="portfolio-horizon-badge" class="priority-badge" style="padding:4px 12px; font-size:11px;">Moderado</span>
+                                </div>
+                                
+                                <div class="portfolio-split-grid">
+                                    <div class="portfolio-donut-wrapper">
+                                        <svg class="portfolio-donut-svg" id="portfolio-donut-svg" viewBox="0 0 40 40">
+                                            <circle class="donut-bg" cx="20" cy="20" r="15.91549430918954" fill="none" stroke-width="4"></circle>
+                                            <circle class="portfolio-segment portfolio-segment-rf" id="donut-seg-rf" cx="20" cy="20" r="15.91549430918954" fill="none" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                                            <circle class="portfolio-segment portfolio-segment-fm" id="donut-seg-fm" cx="20" cy="20" r="15.91549430918954" fill="none" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                                            <circle class="portfolio-segment portfolio-segment-fd" id="donut-seg-fd" cx="20" cy="20" r="15.91549430918954" fill="none" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                                            <circle class="portfolio-segment portfolio-segment-ef" id="donut-seg-ef" cx="20" cy="20" r="15.91549430918954" fill="none" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                                        </svg>
+                                        <div class="portfolio-center-text">
+                                            <span class="lbl">Retorno Est.</span>
+                                            <span class="val" id="portfolio-return-val">--</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="width: 100%;">
+                                        <table class="portfolio-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Activo</th>
+                                                    <th style="text-align:right;">Distribución</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><span class="portfolio-legend-dot" style="background:#c5f82a;"></span>Renta Fija</td>
+                                                    <td style="text-align:right; font-weight:700;" id="port-pct-rf">0%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><span class="portfolio-legend-dot" style="background:#c2f2e9;"></span>Fondos Mutuos</td>
+                                                    <td style="text-align:right; font-weight:700;" id="port-pct-fm">0%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><span class="portfolio-legend-dot" style="background:#ffd3e8;"></span>Fideicomisos</td>
+                                                    <td style="text-align:right; font-weight:700;" id="port-pct-fd">0%</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><span class="portfolio-legend-dot" style="background:#38bdf8;"></span>Efectivo</td>
+                                                    <td style="text-align:right; font-weight:700;" id="port-pct-ef">0%</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                
+                                <div class="portfolio-rationale-box">
+                                    <strong style="display:block; margin-bottom:6px; color:var(--text-strong);">¿Por qué este portafolio?</strong>
+                                    <span id="portfolio-rationale-text">Analizando tu perfil...</span>
+                                </div>
+                            </div>
+
+                            <button class="btn-success" id="finish-btn" onclick="finishChat()" style="margin-top:20px; width:100%; display:block; box-sizing:border-box;">Transmitir perfil al Ejecutivo Comercial</button>
                         </div>
 
                         <!-- Legal Disclaimer (Compliance) -->
@@ -3719,10 +3946,10 @@
 
                 if (botReply.includes('||LEAD_LISTO||')) {
                     botReply = botReply.replace('||LEAD_LISTO||', '').trim();
-                    document.getElementById('finish-container').style.display = 'block';
-                    setTimeout(() => {
-                        document.getElementById('finish-container').scrollIntoView({ behavior: 'smooth' });
-                    }, 300);
+                    appendMessage('bot', botReply);
+                    chatHistoryBackup.push({ role: "model", text: botReply });
+                    ejecutarEvaluacionAutomatica();
+                    return;
                 }
 
                 appendMessage('bot', botReply);
@@ -3753,13 +3980,65 @@
             box.scrollTop = box.scrollHeight;
         }
 
-        async function finishChat() {
-            if (!confirm("¿Confirma que desea enviar su perfil y el historial de conversación para la evaluación del ejecutivo comercial?")) return;
+        function renderPortfolio(leadData) {
+            const dist = leadData.portafolio_distribucion || { renta_fija: 50, fondos_mutuos: 30, fideicomisos: 15, efectivo: 5 };
+            const horizonte = leadData.horizonte_inversion || "Mediano Plazo";
+            const retorno = calcularRetornoSugerido(dist);
+            const justificacion = leadData.portafolio_justificacion || "Se propone una mezcla balanceada acorde a tu perfil.";
+            
+            document.getElementById('portfolio-horizon-badge').textContent = horizonte;
+            document.getElementById('portfolio-return-val').textContent = retorno;
+            document.getElementById('portfolio-rationale-text').textContent = justificacion;
+            
+            document.getElementById('port-pct-rf').textContent = `${dist.renta_fija}%`;
+            document.getElementById('port-pct-fm').textContent = `${dist.fondos_mutuos}%`;
+            document.getElementById('port-pct-fd').textContent = `${dist.fideicomisos}%`;
+            document.getElementById('port-pct-ef').textContent = `${dist.efectivo}%`;
+            
+            const rfSeg = document.getElementById('donut-seg-rf');
+            const fmSeg = document.getElementById('donut-seg-fm');
+            const fdSeg = document.getElementById('donut-seg-fd');
+            const efSeg = document.getElementById('donut-seg-ef');
+            
+            let offset = 0;
+            rfSeg.style.strokeDasharray = `${dist.renta_fija} 100`;
+            rfSeg.style.strokeDashoffset = `${-offset}`;
+            offset += dist.renta_fija;
+            
+            fmSeg.style.strokeDasharray = `${dist.fondos_mutuos} 100`;
+            fmSeg.style.strokeDashoffset = `${-offset}`;
+            offset += dist.fondos_mutuos;
+            
+            fdSeg.style.strokeDasharray = `${dist.fideicomisos} 100`;
+            fdSeg.style.strokeDashoffset = `${-offset}`;
+            offset += dist.fideicomisos;
+            
+            efSeg.style.strokeDasharray = `${dist.efectivo} 100`;
+            efSeg.style.strokeDashoffset = `${-offset}`;
+        }
+        
+        function calcularRetornoSugerido(dist) {
+            const rfVal = (dist.renta_fija || 0) * 0.065;
+            const fmVal = (dist.fondos_mutuos || 0) * 0.105;
+            const fdVal = (dist.fideicomisos || 0) * 0.090;
+            const efVal = (dist.efectivo || 0) * 0.040;
+            const prom = rfVal + fmVal + fdVal + efVal;
+            return `${prom.toFixed(2)}%`;
+        }
 
-            const finishBtn = document.getElementById('finish-btn');
-            finishBtn.disabled = true;
-            finishBtn.innerText = "Procesando perfil y transmitiendo...";
-
+        async function ejecutarEvaluacionAutomatica() {
+            const finishContainer = document.getElementById('finish-container');
+            finishContainer.style.display = 'block';
+            
+            const rationaleText = document.getElementById('portfolio-rationale-text');
+            rationaleText.innerHTML = '<span class="pulse-dot"></span> Generando propuesta de portafolio personalizada con Gemini...';
+            document.getElementById('finish-btn').disabled = true;
+            document.getElementById('finish-btn').innerText = "Procesando propuesta...";
+            
+            setTimeout(() => {
+                finishContainer.scrollIntoView({ behavior: 'smooth' });
+            }, 300);
+            
             try {
                 const res = await fetch('/api/evaluate', {
                     method: 'POST',
@@ -3767,26 +4046,30 @@
                     body: JSON.stringify({ email: currentEmail, history: chatHistoryBackup })
                 });
                 const data = await res.json();
-                if (data.success) {
-                    alert("El perfil ha sido registrado en el CRM con éxito.");
-                    currentEmail = "";
-                    currentInteractionId = null;
-                    chatHistoryBackup = [];
-                    document.getElementById('finish-container').style.display = 'none';
-                    document.getElementById('chat-box').innerHTML = '<div class="msg msg-bot">Bienvenido a la sesión de asesoría financiera de Synapse. Por favor, indíqueme su tipo de consulta o qué temas de inversión desea evaluar hoy.</div><div class="typing-indicator" id="typing-indicator"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>';
-                    document.getElementById('chat-section').style.display = 'none';
-                    document.getElementById('login-section').style.display = 'flex';
-                    navigateTo('home');
-                } else {
-                    alert(`Error en el servidor: ${data.error}`);
+                if (data.success && data.data) {
+                    renderPortfolio(data.data);
+                    
+                    const finishBtn = document.getElementById('finish-btn');
                     finishBtn.disabled = false;
-                    finishBtn.innerText = "Transmitir perfil al Ejecutivo Comercial";
+                    finishBtn.innerText = "Confirmar y Transmitir Perfil Comercial";
+                } else {
+                    rationaleText.textContent = `No se pudo autogenerar la propuesta: ${data.error || 'Error del servidor.'}`;
                 }
             } catch (e) {
-                alert("Error de red: No se pudo transmitir la información.");
-                finishBtn.disabled = false;
-                finishBtn.innerText = "Transmitir perfil al Ejecutivo Comercial";
+                rationaleText.textContent = "Error de red intentando generar propuesta de portafolio.";
             }
+        }
+
+        async function finishChat() {
+            alert("¡Excelente! Tu perfil de inversión y propuesta de portafolio han sido registrados en el CRM con éxito.");
+            currentEmail = "";
+            currentInteractionId = null;
+            chatHistoryBackup = [];
+            document.getElementById('finish-container').style.display = 'none';
+            document.getElementById('chat-box').innerHTML = '<div class="msg msg-bot">Bienvenido a la sesión de asesoría financiera de Synapse. Por favor, indíqueme su tipo de consulta o qué temas de inversión desea evaluar hoy.</div><div class="typing-indicator" id="typing-indicator"><svg class="gemini-sparkle" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:16px; height:16px;"><path d="M12 2L14.85 9.15L22 12L14.85 14.85L12 22L9.15 14.85L2 12L9.15 9.15L12 2Z" fill="#c5f82a"/></svg><span id="typing-status-text" style="font-weight: 500;">Synapse AI está analizando...</span></div>';
+            document.getElementById('chat-section').style.display = 'none';
+            document.getElementById('login-section').style.display = 'flex';
+            navigateTo('home');
         }
 
         document.getElementById('chat-input').addEventListener('keypress', function (e) {
@@ -4303,6 +4586,52 @@
             const loaderContainer = document.getElementById('audit-loading-container');
             const realContentContainer = document.getElementById('audit-real-content-container');
             
+            // Renderizar los datos de portafolio del lead desde memoria local
+            const lead = allLeads.find(l => l.id === leadId);
+            if (lead) {
+                const dist = lead.portafolio_distribucion || { renta_fija: 50, fondos_mutuos: 30, fideicomisos: 15, efectivo: 5 };
+                const horizonte = lead.horizonte_inversion || "Por determinar";
+                const justificacion = lead.portafolio_justificacion || "Asignación recomendada basada en el perfil calificado.";
+                
+                // Calcular retorno
+                const rfVal = (dist.renta_fija || 0) * 0.065;
+                const fmVal = (dist.fondos_mutuos || 0) * 0.105;
+                const fdVal = (dist.fideicomisos || 0) * 0.090;
+                const efVal = (dist.efectivo || 0) * 0.040;
+                const retorno = `${(rfVal + fmVal + fdVal + efVal).toFixed(2)}%`;
+                
+                document.getElementById('audit-portfolio-horizon').textContent = horizonte;
+                document.getElementById('audit-portfolio-return').textContent = retorno;
+                document.getElementById('audit-portfolio-justification').textContent = justificacion;
+                
+                document.getElementById('audit-port-pct-rf').textContent = `${dist.renta_fija}%`;
+                document.getElementById('audit-port-pct-fm').textContent = `${dist.fondos_mutuos}%`;
+                document.getElementById('audit-port-pct-fd').textContent = `${dist.fideicomisos}%`;
+                document.getElementById('audit-port-pct-ef').textContent = `${dist.efectivo}%`;
+                
+                // Donut SVG
+                const rfSeg = document.getElementById('audit-donut-seg-rf');
+                const fmSeg = document.getElementById('audit-donut-seg-fm');
+                const fdSeg = document.getElementById('audit-donut-seg-fd');
+                const efSeg = document.getElementById('audit-donut-seg-ef');
+                
+                let offset = 0;
+                rfSeg.style.strokeDasharray = `${dist.renta_fija} 100`;
+                rfSeg.style.strokeDashoffset = `${-offset}`;
+                offset += dist.renta_fija;
+                
+                fmSeg.style.strokeDasharray = `${dist.fondos_mutuos} 100`;
+                fmSeg.style.strokeDashoffset = `${-offset}`;
+                offset += dist.fondos_mutuos;
+                
+                fdSeg.style.strokeDasharray = `${dist.fideicomisos} 100`;
+                fdSeg.style.strokeDashoffset = `${-offset}`;
+                offset += dist.fideicomisos;
+                
+                efSeg.style.strokeDasharray = `${dist.efectivo} 100`;
+                efSeg.style.strokeDashoffset = `${-offset}`;
+            }
+
             // Mostrar loader y ocultar contenido real
             loaderContainer.style.display = 'block';
             realContentContainer.style.display = 'none';

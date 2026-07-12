@@ -73,7 +73,10 @@ Se ejecutaron pruebas sistemáticas manuales y automáticas sobre el flujo de ex
 * **Prueba de Continuidad:** Se verificó que el servidor recuerde el contexto al pasar el `previous_interaction_id`, evitando alucinaciones por pérdida de memoria[cite: 2].
 * **Validación de Señal Oculta:** Se probó que el botón de envío al CRM solo aparezca de forma dinámica cuando la IA emite la directiva de calificación completa (`||LEAD_LISTO||`), evitando envíos prematuros de leads vacíos[cite: 1].
 * **Resiliencia de Datos:** Se implementaron validaciones de tipado en el backend que asignan valores por defecto si un lead llega incompleto, garantizando **cero errores de `undefined`** en el panel del ejecutivo.
-* **Pruebas de Seguridad en la Bandeja:** Se validó la restricción de acceso con credenciales (`admin`/`admin`), así como las acciones de actualización de estado y la eliminación física de registros vía método HTTP `DELETE`[cite: 1].
+* **Pruebas de Seguridad en la Bandeja:** La bandeja del ejecutivo está protegida con **autenticación real en el servidor**: las credenciales se verifican contra Supabase (contraseñas hasheadas con **bcrypt**) y cada sesión usa un token con expiración de 8 horas. Todos los endpoints administrativos (`GET/POST/DELETE /api/leads`) exigen el token vía cabecera `Authorization: Bearer`[cite: 1].
+* **Protección contra XSS:** El panel del ejecutivo renderiza todos los datos del cliente con `textContent` (nunca `innerHTML`), evitando inyección de scripts a través de la conversación o el correo del prospecto.
+* **Límite de peticiones (Rate Limiting):** Los endpoints de chat, evaluación y login tienen límites por IP para proteger la cuota de la API de Gemini y prevenir ataques de fuerza bruta.
+* **Persistencia real:** Los leads, usuarios y sesiones viven en **Supabase (PostgreSQL)** con Row Level Security activado; solo el backend puede acceder a los datos con su clave secreta.
 
 ---
 
@@ -82,15 +85,25 @@ Se ejecutaron pruebas sistemáticas manuales y automáticas sobre el flujo de ex
    ```bash
    git clone [https://github.com/mariollaguno19-sketch/hacktaws.git](https://github.com/mariollaguno19-sketch/hacktaws.git)
    cd hacktaws
-Instalar dependencias:
+2. **Instalar dependencias:**
+   ```bash
+   npm install
+   ```
 
-npm install
+3. **Configurar las variables de entorno:**
+   Copia `.env.example` a `.env` y completa los valores:
+   ```env
+   GEMINI_API_KEY="tu_api_key_de_google_ai_studio"
+   SUPABASE_URL="https://tu-proyecto.supabase.co"
+   SUPABASE_SECRET_KEY="tu_clave_secreta_de_supabase"
+   ```
+   * La `GEMINI_API_KEY` se obtiene en [Google AI Studio](https://aistudio.google.com/apikey).
+   * La `SUPABASE_SECRET_KEY` (service role) se copia desde el dashboard de Supabase → Settings → API Keys.
+   * Para probar sin API key de Gemini, usa `MOCK_GEMINI="true"` (respuestas simuladas).
 
-Configurar la API Key de Gemini:
-Crea un archivo .env en la raíz y agrega tu clave de Google AI Studio:
+4. **Iniciar el servidor:**
+   ```bash
+   node server.js
+   ```
 
-GEMINI_API_KEY="tu_api_key_aqui"
-
-Iniciar el servidor:
-
-node server.js
+5. **Acceso al CRM:** El usuario ejecutivo se administra en la tabla `usuarios_admin` de Supabase (contraseña hasheada con bcrypt; nunca en texto plano ni en el código).

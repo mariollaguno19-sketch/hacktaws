@@ -1,11 +1,11 @@
 let currentEmail = "";
 let currentInteractionId = null;
-let chatHistoryBackup = []; // Respaldo infalible para enviar al CRM
+let chatHistoryBackup = []; // Respaldo para enviar al CRM
 
 function loginUser() {
     const email = document.getElementById('user-email').value.trim();
     if (!email || !email.includes('@')) {
-        alert("Por favor ingresa un correo electrónico válido.");
+        alert("Por favor ingrese una dirección de correo electrónico válida.");
         return;
     }
     currentEmail = email;
@@ -15,13 +15,15 @@ function loginUser() {
     document.getElementById('chat-input').focus();
     
     // Guardar saludo en el respaldo
-    chatHistoryBackup.push({ role: "model", text: "¡Hola! Soy tu asesor e IA Tutor de Futuro Academy. ¿En qué te puedo ayudar hoy o qué te gustaría aprender sobre inversiones?" });
+    chatHistoryBackup.push({ role: "model", text: "Bienvenido a la sesión de asesoría financiera de Futuro Academy. Por favor, indíqueme su tipo de consulta o qué temas de inversión desea evaluar hoy." });
 }
 
 async function sendMessage() {
     const input = document.getElementById('chat-input');
     const sendBtn = document.getElementById('send-btn');
     const text = input.value.trim();
+    const typingIndicator = document.getElementById('typing-indicator');
+    const chatBox = document.getElementById('chat-box');
     
     if (!text) return;
 
@@ -29,10 +31,16 @@ async function sendMessage() {
     chatHistoryBackup.push({ role: "user", text: text });
     input.value = "";
 
+    // Bloquear inputs
     input.disabled = true;
-    input.placeholder = "⏳ La IA está analizando y redactando...";
+    input.placeholder = "Procesando consulta...";
     sendBtn.disabled = true;
-    sendBtn.innerText = "⏳ Pensando...";
+    sendBtn.innerText = "Procesando...";
+
+    // Mostrar indicador de escritura y moverlo al final
+    typingIndicator.style.display = 'flex';
+    chatBox.appendChild(typingIndicator);
+    chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
         const response = await fetch('/api/chat', {
@@ -43,48 +51,56 @@ async function sendMessage() {
         
         const data = await response.json();
         
+        // Ocultar indicador
+        typingIndicator.style.display = 'none';
+
         if (!response.ok || data.error) {
-            appendMessage('bot', `⚠️ ${data.error || "Hubo un error de comunicación con la IA."}`);
+            appendMessage('bot', `Error de comunicación: ${data.error || "No se pudo obtener respuesta."}`);
             return;
         }
         
         currentInteractionId = data.interaction_id;
         
-        // ANALIZAR SI LA IA DECIDIÓ QUE EL LEAD ESTÁ LISTO
         let botReply = data.reply;
         if (botReply.includes('||LEAD_LISTO||')) {
-            // 1. Limpiamos la etiqueta secreta para que el usuario no la vea
+            // Limpiar etiqueta secreta
             botReply = botReply.replace('||LEAD_LISTO||', '').trim();
             
-            // 2. DESBLOQUEAMOS EL BOTÓN EN LA INTERFAZ
+            // Desbloquear el botón en la interfaz
             document.getElementById('finish-container').style.display = 'block';
             
-            // Hacemos un scroll suave para que el usuario vea que apareció el botón
+            // Desplazar al banner
             setTimeout(() => {
                 document.getElementById('finish-container').scrollIntoView({ behavior: 'smooth' });
-            }, 500);
+            }, 300);
         }
 
         appendMessage('bot', botReply);
         chatHistoryBackup.push({ role: "model", text: botReply });
         
     } catch (e) {
-        appendMessage('bot', "⚠️ Error de red: No se pudo contactar al servidor local.");
+        typingIndicator.style.display = 'none';
+        appendMessage('bot', "Error de red: No se pudo establecer conexión con el servidor.");
     } finally {
         input.disabled = false;
-        input.placeholder = "Escribe tu consulta aquí...";
+        input.placeholder = "Escriba su consulta aquí...";
         sendBtn.disabled = false;
         sendBtn.innerText = "Enviar";
         input.focus();
+        chatBox.scrollTop = chatBox.scrollHeight;
     }
 }
 
 function appendMessage(sender, text) {
     const box = document.getElementById('chat-box');
+    const typingIndicator = document.getElementById('typing-indicator');
+    
     const div = document.createElement('div');
     div.className = `msg msg-${sender}`;
     div.innerText = text;
-    box.appendChild(div);
+    
+    // Insertar antes del indicador de escritura para mantenerlo siempre al final
+    box.insertBefore(div, typingIndicator);
     box.scrollTop = box.scrollHeight;
 }
 
@@ -96,11 +112,11 @@ document.getElementById('chat-input').addEventListener('keypress', function (e) 
 });
 
 async function finishChat() {
-    if (!confirm("¿Deseas enviar tu historial y perfil financiero al ejecutivo para agendar cita?")) return;
+    if (!confirm("¿Confirma que desea enviar su perfil y el historial de conversación para la evaluación del ejecutivo comercial?")) return;
 
     const finishBtn = document.getElementById('finish-btn');
     finishBtn.disabled = true;
-    finishBtn.innerText = "⏳ Evaluando con IA y enviando al CRM...";
+    finishBtn.innerText = "Procesando perfil y transmitiendo...";
 
     try {
         const res = await fetch('/api/evaluate', {
@@ -115,16 +131,16 @@ async function finishChat() {
         const data = await res.json();
         
         if (data.success) {
-            alert("✅ ¡Perfil procesado y guardado en el CRM con éxito! El ejecutivo ya puede verlo en su bandeja.");
+            alert("El perfil ha sido procesado y registrado en el CRM con éxito.");
             window.location.href = "index.html";
         } else {
-            alert(`⚠️ Error en el servidor: ${data.error}`);
+            alert(`Error en el servidor: ${data.error}`);
             finishBtn.disabled = false;
-            finishBtn.innerText = "✨ Enviar mi perfil al Ejecutivo Comercial";
+            finishBtn.innerText = "Transmitir perfil al Ejecutivo Comercial";
         }
     } catch (e) {
-        alert("⚠️ Error de conexión al intentar guardar en el CRM.");
+        alert("Error de red: No se pudo transmitir la información.");
         finishBtn.disabled = false;
-        finishBtn.innerText = "✨ Enviar mi perfil al Ejecutivo Comercial";
+        finishBtn.innerText = "Transmitir perfil al Ejecutivo Comercial";
     }
 }

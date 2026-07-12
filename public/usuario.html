@@ -3,60 +3,415 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal Usuario - Asesoría IA</title>
+    <title>Asesoría Financiera - Futuro Academy</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f4f9; padding: 20px; margin: 0; }
-        .container { max-width: 700px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .btn { background: #1a73e8; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 500; transition: 0.2s; }
-        .btn:disabled { background: #9aa0a6; cursor: not-allowed; }
-        
-        /* Botón de cierre oculto por defecto */
-        #finish-container { display: none; margin-top: 15px; background: #e6f4ea; border: 1px solid #34a853; padding: 15px; border-radius: 8px; text-align: center; }
-        .btn-success { background: #1e8e3e; color: white; border: none; width: 100%; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-top: 10px; }
-        .btn-success:hover { background: #137333; }
-        
-        input { padding: 12px; border: 1px solid #dadce0; border-radius: 6px; font-size: 16px; }
-        input:disabled { background: #f1f3f4; color: #5f6368; }
-        #chat-box { height: 380px; overflow-y: auto; border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; background: #fafafa; margin-bottom: 15px; }
-        .msg { margin-bottom: 12px; padding: 10px 14px; border-radius: 8px; max-width: 80%; line-height: 1.4; }
-        .msg-user { background: #e8f0fe; color: #1a73e8; margin-left: auto; text-align: right; }
-        .msg-bot { background: #e6f4ea; color: #137333; }
-        .screen { display: none; }
-        .active { display: block; }
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #090d16;
+            color: #f1f5f9;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            display: flex;
+            width: 95%;
+            max-width: 1100px;
+            height: 85vh;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Enlace de regreso */
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 2.5%;
+            text-decoration: none;
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+        }
+
+        .back-link:hover {
+            color: #ffffff;
+        }
+
+        /* Panel lateral de base de conocimientos */
+        .sidebar {
+            width: 320px;
+            background: rgba(2, 6, 23, 0.4);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        .sidebar-brand {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #38bdf8;
+            margin-bottom: 24px;
+        }
+
+        .sidebar h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin: 0 0 16px 0;
+            color: #ffffff;
+        }
+
+        .info-block {
+            margin-bottom: 24px;
+        }
+
+        .info-block h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #cbd5e1;
+        }
+
+        .info-block p {
+            font-size: 13.5px;
+            font-weight: 300;
+            line-height: 1.5;
+            color: #94a3b8;
+            margin: 0;
+        }
+
+        /* Panel principal (Chat / Login) */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Pantalla Login */
+        #login-section {
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        #login-section h2 {
+            font-size: 28px;
+            font-weight: 600;
+            margin: 0 0 12px 0;
+            color: #ffffff;
+        }
+
+        #login-section p {
+            font-size: 15px;
+            color: #94a3b8;
+            margin: 0 0 24px 0;
+            font-weight: 300;
+        }
+
+        input[type="email"], input[type="text"] {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 14px 18px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            width: 280px;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input[type="email"]:focus, input[type="text"]:focus {
+            border-color: #38bdf8;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn {
+            background: #0284c7;
+            color: #ffffff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #0ea5e9;
+        }
+
+        .btn:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: #94a3b8;
+            cursor: not-allowed;
+            border-color: transparent;
+        }
+
+        /* Pantalla Chat */
+        #chat-section {
+            padding: 24px;
+        }
+
+        .chat-header {
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 16px;
+        }
+
+        .chat-header h3 {
+            font-size: 16px;
+            font-weight: 500;
+            margin: 0;
+            color: #94a3b8;
+        }
+
+        .chat-header span {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        #chat-box {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(2, 6, 23, 0.2);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .msg {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            line-height: 1.5;
+            font-size: 14.5px;
+            word-wrap: break-word;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-user {
+            background: #1e3a8a;
+            color: #ffffff;
+            margin-left: auto;
+            border-bottom-right-radius: 2px;
+        }
+
+        .msg-bot {
+            background: rgba(255, 255, 255, 0.05);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            margin-right: auto;
+            border-bottom-left-radius: 2px;
+        }
+
+        /* Indicador de escritura */
+        .typing-indicator {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 12px 18px;
+            border-radius: 10px;
+            border-bottom-left-radius: 2px;
+            display: none;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #94a3b8;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+
+        .chat-input-area {
+            display: flex;
+            gap: 12px;
+        }
+
+        .chat-input-area input {
+            flex: 1;
+        }
+
+        /* Banner de finalización */
+        #finish-container {
+            display: none;
+            background: rgba(6, 95, 70, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 16px;
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #finish-container p {
+            margin: 0;
+            font-size: 14px;
+            color: #a7f3d0;
+            line-height: 1.5;
+        }
+
+        #finish-container p.title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: #34d399;
+        }
+
+        .btn-success {
+            background: #059669;
+            color: #ffffff;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-success:hover:not(:disabled) {
+            background: #10b981;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <a href="index.html" style="text-decoration: none; color: #5f6368;">⬅ Volver al inicio</a>
-    
-    <div id="login-section" class="screen active" style="text-align: center; margin-top: 30px;">
-        <h2>👋 Bienvenido a tu Asesoría Financiera</h2>
-        <p>Por favor ingresa tu correo para iniciar la conversación con nuestra IA:</p>
-        <input type="email" id="user-email" placeholder="tu@correo.com" style="width: 70%;"><br><br>
-        <button class="btn" onclick="loginUser()">Comenzar a Chatear</button>
+    <a href="index.html" class="back-link">Regresar al inicio</a>
+
+    <div class="container">
+        <!-- Panel lateral informativo -->
+        <div class="sidebar">
+            <div class="sidebar-brand">Futuro Academy</div>
+            <h2>Asesoría Financiera</h2>
+            
+            <div class="info-block">
+                <h3>Renta Fija</h3>
+                <p>Instrumentos de inversión con rentabilidad pactada de antemano, tales como Bonos y Pólizas de acumulación. Recomendado para perfiles con baja tolerancia al riesgo.</p>
+            </div>
+
+            <div class="info-block">
+                <h3>Fondos Mutuos</h3>
+                <p>Aportes colectivos de capital administrados por profesionales con el fin de diversificar el portafolio en múltiples activos y optimizar el rendimiento.</p>
+            </div>
+
+            <div class="info-block">
+                <h3>Regla de Oro</h3>
+                <p>Evite invertir capital comprometido para gastos corrientes mensuales o destinado a constituir su fondo de emergencia.</p>
+            </div>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="main-content">
+            
+            <!-- Pantalla de Login -->
+            <div id="login-section" class="screen active">
+                <h2>Inicio de Sesión</h2>
+                <p>Ingrese su correo electrónico institucional o personal para iniciar la conversación con el asistente virtual.</p>
+                <input type="email" id="user-email" placeholder="correo@ejemplo.com"><br><br>
+                <button class="btn" onclick="loginUser()">Iniciar Conversación</button>
+            </div>
+
+            <!-- Pantalla de Chat -->
+            <div id="chat-section" class="screen">
+                <div class="chat-header">
+                    <h3>Sesión de Asesoría | Canal: <span id="display-email"></span></h3>
+                </div>
+                
+                <div id="chat-box">
+                    <div class="msg msg-bot">Bienvenido a la sesión de asesoría financiera de Futuro Academy. Por favor, indíqueme su tipo de consulta o qué temas de inversión desea evaluar hoy.</div>
+                    
+                    <!-- Indicador de escritura simulado -->
+                    <div class="typing-indicator" id="typing-indicator">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+                
+                <div class="chat-input-area">
+                    <input type="text" id="chat-input" placeholder="Escriba su consulta aquí...">
+                    <button class="btn" id="send-btn" onclick="sendMessage()">Enviar</button>
+                </div>
+
+                <!-- Banner de Calificación de Lead -->
+                <div id="finish-container">
+                    <p class="title">Evaluación de perfil completada</p>
+                    <p>Los datos de su perfil de inversión han sido calificados. Puede enviar esta información para que un ejecutivo comercial evalúe su caso.</p>
+                    <button class="btn-success" id="finish-btn" onclick="finishChat()">Transmitir perfil al Ejecutivo Comercial</button>
+                </div>
+            </div>
+
+        </div>
     </div>
 
-    <div id="chat-section" class="screen">
-        <h3>💬 Asesoría IA | Correo: <span id="display-email" style="color:#1a73e8"></span></h3>
-        <div id="chat-box">
-            <div class="msg msg-bot">¡Hola! Soy tu asesor e IA Tutor de Futuro Academy. ¿En qué te puedo ayudar hoy o qué te gustaría aprender sobre inversiones?</div>
-        </div>
-        
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="chat-input" placeholder="Escribe tu consulta aquí..." style="flex: 1;">
-            <button class="btn" id="send-btn" onclick="sendMessage()">Enviar</button>
-        </div>
-
-        <!-- CONTENEDOR OCULTO: Solo aparecerá cuando la IA decida que el lead está listo -->
-        <div id="finish-container">
-            <p style="margin: 0; color: #137333; font-weight: bold;">🎉 ¡La IA ha completado tu perfil financiero!</p>
-            <p style="margin: 5px 0 0 0; font-size: 14px; color: #5f6368;">Ahora puedes solicitar que un asesor corporativo te contacte con una propuesta a la medida.</p>
-            <button class="btn-success" id="finish-btn" onclick="finishChat()">✨ Enviar mi perfil al Ejecutivo Comercial</button>
-        </div>
-    </div>
-</div>
-
-<script src="usuario.js"></script>
+    <script src="usuario.js"></script>
 </body>
 </html>

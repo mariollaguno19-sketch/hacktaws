@@ -17,3 +17,10 @@ Thumbs.db
 # Archivos temporales
 *.tmp
 *.swp
+
+# Python (restos de versiones anteriores)
+__pycache__/
+*.pyc
+
+# Datos locales del CRM (contienen información personal de prospectos)
+crm_datos.json

@@ -8,19 +8,17 @@ const { createClient } = require('@supabase/supabase-js');
 
 dotenv.config();
 
-// ── Validación de configuración (fail-fast con mensaje claro) ──
-const REQUERIDAS = [];
-if (process.env.MOCK_DATABASE !== 'true') {
-    REQUERIDAS.push('SUPABASE_URL', 'SUPABASE_SECRET_KEY');
+// ── Validación de configuración (con fallback automático para despliegues rápidos) ──
+let isMockDb = process.env.MOCK_DATABASE === 'true';
+let isMockGemini = process.env.MOCK_GEMINI === 'true';
+
+if (!isMockDb && (!process.env.SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY)) {
+    console.warn('⚠️ ADVERTENCIA: Faltan credenciales de Supabase. Activando MOCK_DATABASE automáticamente.');
+    isMockDb = true;
 }
-if (process.env.MOCK_GEMINI !== 'true') {
-    REQUERIDAS.push('GEMINI_API_KEY');
-}
-const FALTANTES = REQUERIDAS.filter(k => !process.env[k]);
-if (FALTANTES.length > 0) {
-    console.error(`❌ Faltan variables de entorno en .env: ${FALTANTES.join(', ')}`);
-    console.error('   Copia .env.example a .env y completa los valores.');
-    process.exit(1);
+if (!isMockGemini && !process.env.GEMINI_API_KEY) {
+    console.warn('⚠️ ADVERTENCIA: Falta la API Key de Gemini. Activando MOCK_GEMINI automáticamente.');
+    isMockGemini = true;
 }
 
 const app = express();
@@ -29,7 +27,7 @@ const SESION_DURACION_MS = 8 * 60 * 60 * 1000; // 8 horas
 
 // ── Cliente de IA (real o simulado para demos sin API key) ──
 let ai;
-if (process.env.MOCK_GEMINI === 'true') {
+if (isMockGemini) {
     console.log('🧪 MODO MOCK ACTIVADO: las respuestas de la IA son simuladas.');
     ai = {
         interactions: {
@@ -81,7 +79,7 @@ if (process.env.MOCK_GEMINI === 'true') {
 
 // ── Cliente Supabase con clave secreta (solo vive en el servidor, nunca llega al navegador) ──
 let supabase;
-if (process.env.MOCK_DATABASE === 'true') {
+if (isMockDb) {
     console.log('🧪 MODO MOCK BD ACTIVADO: supabase está simulado en memoria.');
     
     const leadsDb = [
@@ -821,7 +819,7 @@ app.use((err, req, res, next) => {
 });
 
 // Limpieza periódica de sesiones vencidas (higiene de la tabla en Supabase)
-if (process.env.MOCK_DATABASE !== 'true') {
+if (!isMockDb && !process.env.VERCEL) {
     setInterval(async () => {
         try {
             await supabase.from('sesiones').delete().lt('expira_en', new Date().toISOString());
@@ -831,27 +829,31 @@ if (process.env.MOCK_DATABASE !== 'true') {
     }, 60 * 60 * 1000).unref();
 }
 
-const BACKLOG = 1024; // cola de conexiones pendientes mayor al default (511) para ráfagas
-const servidor = app.listen(PORT, BACKLOG, () => {
-    console.log(`🚀 SERVIDOR CORRIENDO EN: http://localhost:${PORT}`);
-    if (process.env.MOCK_DATABASE === 'true') {
-        console.log('🗄️  Base de datos: simulada en memoria (MOCK_DATABASE)');
-    } else {
-        console.log(`🗄️  Base de datos: Supabase (${process.env.SUPABASE_URL})`);
+if (process.env.VERCEL) {
+    module.exports = app;
+} else {
+    const BACKLOG = 1024; // cola de conexiones pendientes mayor al default (511) para ráfagas
+    const servidor = app.listen(PORT, BACKLOG, () => {
+        console.log(`🚀 SERVIDOR CORRIENDO EN: http://localhost:${PORT}`);
+        if (isMockDb) {
+            console.log('🗄️  Base de datos: simulada en memoria (MOCK_DATABASE)');
+        } else {
+            console.log(`🗄️  Base de datos: Supabase (${process.env.SUPABASE_URL})`);
+        }
+    });
+
+    // Endurecimiento del servidor HTTP (mitiga Slowloris y agota-recursos)
+    servidor.keepAliveTimeout = 30 * 1000;
+    servidor.headersTimeout = 35 * 1000;   // debe ser > keepAliveTimeout
+    servidor.requestTimeout = 60 * 1000;   // ninguna petición puede colgar el hilo indefinidamente
+    servidor.maxConnections = 1024;
+
+    // Apagado limpio: deja de aceptar conexiones y termina las que están en curso
+    function apagar(senal) {
+        console.log(`\n${senal} recibido: cerrando servidor...`);
+        servidor.close(() => process.exit(0));
+        setTimeout(() => process.exit(1), 10000).unref();
     }
-});
-
-// Endurecimiento del servidor HTTP (mitiga Slowloris y agota-recursos)
-servidor.keepAliveTimeout = 30 * 1000;
-servidor.headersTimeout = 35 * 1000;   // debe ser > keepAliveTimeout
-servidor.requestTimeout = 60 * 1000;   // ninguna petición puede colgar el hilo indefinidamente
-servidor.maxConnections = 1024;
-
-// Apagado limpio: deja de aceptar conexiones y termina las que están en curso
-function apagar(senal) {
-    console.log(`\n${senal} recibido: cerrando servidor...`);
-    servidor.close(() => process.exit(0));
-    setTimeout(() => process.exit(1), 10000).unref();
+    process.on('SIGTERM', () => apagar('SIGTERM'));
+    process.on('SIGINT', () => apagar('SIGINT'));
 }
-process.on('SIGTERM', () => apagar('SIGTERM'));
-process.on('SIGINT', () => apagar('SIGINT'));

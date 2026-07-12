@@ -25,56 +25,67 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SESION_DURACION_MS = 8 * 60 * 60 * 1000; // 8 horas
 
-// ── Cliente de IA (real o simulado para demos sin API key) ──
-let ai;
-if (isMockGemini) {
-    console.log('🧪 MODO MOCK ACTIVADO: las respuestas de la IA son simuladas.');
-    ai = {
-        interactions: {
-            create: async (options) => {
-                // Si es la llamada de evaluación (JSON structured output)
-                if (options.response_format && options.response_format.type === 'text' && options.response_format.mime_type === 'application/json') {
-                    let email = "mocked@example.com";
-                    const emailMatch = options.input.match(/correo "([^"]+)"/);
-                    if (emailMatch) {
-                        email = emailMatch[1];
-                    }
-
-                    const responseObj = {
-                        correo_cliente: email,
-                        tipo_cliente: Math.random() > 0.5 ? "B2B" : "B2C",
-                        interes_principal: "Inversiones en Renta Fija",
-                        puntaje_prioridad: Math.floor(Math.random() * 5) + 6,
-                        monto_estimado: [5000, 10000, 25000, 50000][Math.floor(Math.random() * 4)],
-                        nivel_riesgo: ["Conservador", "Moderado", "Agresivo"][Math.floor(Math.random() * 3)],
-                        telefono: null,
-                        etapa_embudo: "Listo para asesor",
-                        resumen_necesidad: "Interés en diversificar portafolio con bajo riesgo, presupuesto estimado de $10,000.",
-                        objeciones_detectadas: ["Dudas sobre disponibilidad de fondos"],
-                        accion_sugerida_ejecutivo: "Llamar para agendar reunión y presentar portafolio de Renta Fija."
-                    };
-
-                    return {
-                        output_text: JSON.stringify(responseObj),
-                        id: "mock-eval-" + Math.random().toString(36).substr(2, 9)
-                    };
-                } else {
-                    // Si es la llamada de chat normal
-                    const isFinish = Math.random() > 0.7;
-                    const replyText = isFinish
-                        ? "Entendido, contamos con excelentes fondos de Renta Fija y Fondos Mutuos. Dado que ya me has proporcionado tus datos básicos de presupuesto y tipo de cliente B2C, tu perfil de inversión está listo. ||LEAD_LISTO||"
-                        : "Hola, para poder asesorarte adecuadamente según Synapse, ¿deseas invertir como empresa (B2B) o persona natural (B2C)? ¿De qué presupuesto aproximado dispones para comenzar?";
-
-                    return {
-                        output_text: replyText,
-                        id: "mock-interaction-" + Math.random().toString(36).substr(2, 9)
-                    };
+// ── Cliente de IA Mockeado (simulado para demos sin API key) ──
+const mockAiClient = {
+    interactions: {
+        create: async (options) => {
+            // Si es la llamada de evaluación (JSON structured output)
+            if (options.response_format && options.response_format.type === 'text' && options.response_format.mime_type === 'application/json') {
+                let email = "mocked@example.com";
+                const emailMatch = options.input.match(/correo "([^"]+)"/);
+                if (emailMatch) {
+                    email = emailMatch[1];
                 }
+
+                const responseObj = {
+                    correo_cliente: email,
+                    tipo_cliente: Math.random() > 0.5 ? "B2B" : "B2C",
+                    interes_principal: "Inversiones en Renta Fija",
+                    puntaje_prioridad: Math.floor(Math.random() * 5) + 6,
+                    monto_estimado: [5000, 10000, 25000, 50000][Math.floor(Math.random() * 4)],
+                    nivel_riesgo: ["Conservador", "Moderado", "Agresivo"][Math.floor(Math.random() * 3)],
+                    telefono: null,
+                    etapa_embudo: "Listo para asesor",
+                    resumen_necesidad: "Interés en diversificar portafolio con bajo riesgo, presupuesto estimado de $10,000.",
+                    objeciones_detectadas: ["Dudas sobre disponibilidad de fondos"],
+                    accion_sugerida_ejecutivo: "Llamar para agendar reunión y presentar portafolio de Renta Fija."
+                };
+
+                return {
+                    output_text: JSON.stringify(responseObj),
+                    id: "mock-eval-" + Math.random().toString(36).substr(2, 9)
+                };
+            } else {
+                // Si es la llamada de chat normal
+                const isFinish = Math.random() > 0.7;
+                const replyText = isFinish
+                    ? "Entendido, contamos con excelentes fondos de Renta Fija y Fondos Mutuos. Dado que ya me has proporcionado tus datos básicos de presupuesto y tipo de cliente B2C, tu perfil de inversión está listo. ||LEAD_LISTO||"
+                    : "Hola, para poder asesorarte adecuadamente según Synapse, ¿deseas invertir como empresa (B2B) o persona natural (B2C)? ¿De qué presupuesto aproximado dispones para comenzar?";
+
+                return {
+                    output_text: replyText,
+                    id: "mock-interaction-" + Math.random().toString(36).substr(2, 9)
+                };
             }
         }
-    };
-} else {
+    }
+};
+
+let ai;
+if (!isMockGemini) {
     ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+}
+
+// Helper para obtener el cliente de IA activo (real de Google o Mock simulado)
+function getAIClient(req) {
+    const clientKey = req.headers['x-gemini-key'];
+    if (clientKey && clientKey.trim() && clientKey !== 'tu_api_key_aqui') {
+        return new GoogleGenAI({ apiKey: clientKey.trim() });
+    }
+    if (!isMockGemini && process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() && process.env.GEMINI_API_KEY !== 'tu_api_key_aqui') {
+        return ai;
+    }
+    return mockAiClient;
 }
 
 // ── Cliente Supabase con clave secreta (solo vive en el servidor, nunca llega al navegador) ──
@@ -89,6 +100,8 @@ if (isMockDb) {
             tipo_cliente: "B2C",
             interes_principal: "Renta Fija",
             puntaje_prioridad: 8,
+            monto_estimado: 25000,
+            nivel_riesgo: "Moderado",
             etapa_embudo: "Listo para asesor",
             resumen_necesidad: "Inversión en póliza",
             objeciones_detectadas: [],
@@ -493,7 +506,8 @@ app.post('/api/chat', limiteChat, async (req, res) => {
         const options = { model: 'gemini-3.5-flash', input: inputData };
         if (previous_id) options.previous_interaction_id = previous_id;
 
-        const interaction = await ai.interactions.create(options);
+        const dynamicAi = getAIClient(req);
+        const interaction = await dynamicAi.interactions.create(options);
         console.log(`[${new Date().toLocaleTimeString()}] 🤖 RESPUESTA IA LISTA.`);
         res.json({ reply: interaction.output_text, interaction_id: interaction.id });
     } catch (error) {
@@ -550,7 +564,8 @@ app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
             "accion_sugerida_ejecutivo": "Acción clara para el asesor (ej. Agendar reunión para presentar portafolio)"
         }`;
 
-        const interaction = await ai.interactions.create({
+        const dynamicAi = getAIClient(req);
+        const interaction = await dynamicAi.interactions.create({
             model: 'gemini-3.5-flash',
             input: prompt,
             response_format: { type: 'text', mime_type: 'application/json' }
@@ -665,6 +680,87 @@ app.get('/api/leads/:id', requiereAuth, async (req, res) => {
     } catch (e) {
         console.error('❌ ERROR OBTENIENDO LEAD:', e.message || e);
         res.status(500).json({ error: 'No se pudo obtener el lead.' });
+    }
+});
+
+// Endpoint de Auditoría y Análisis Avanzado Synapse con Gemini
+app.get('/api/leads/:id/synapse-analysis', requiereAuth, async (req, res) => {
+    const { id } = req.params;
+    if (!UUID_REGEX.test(id)) {
+        return res.status(400).json({ error: 'Identificador de lead no válido.' });
+    }
+    try {
+        const { data: lead, error } = await supabase
+            .from('leads').select('*').eq('id', id).maybeSingle();
+        if (error) throw error;
+        if (!lead) return res.status(404).json({ error: 'Lead no encontrado.' });
+
+        const history = lead.historial || [];
+        const aiClient = getAIClient(req);
+        
+        // Si estamos usando el mock
+        if (aiClient === mockAiClient) {
+            const mockReport = {
+                perfil_comportamiento: "Cliente B2C analítico y conservador en su enfoque. Muestra un interés genuino en proteger el capital y evitar especulaciones. Nivel de urgencia: Alto (desea iniciar este mes).",
+                estrategia_comercial: "1. Destacar la solidez institucional y las pólizas de renta fija garantizadas.\n2. No apresurar con términos complejos de renta variable; mantener el foco en interés compuesto y liquidez.\n3. Ofrecer un simulador de rendimientos personalizado.",
+                objeciones_respuestas: "Objeción: 'Seguridad de la póliza'. Respuesta: 'Nuestras pólizas cuentan con respaldo de activos de máxima calificación (AAA) y están supervisadas localmente, garantizando su retorno contractual.'",
+                email_plantilla: `Asunto: Propuesta de Inversión Segura - Synapse AI\n\nEstimado/a cliente,\n\nEspero que se encuentre muy bien. \n\nFue un gusto conversar con usted sobre su interés en diversificar su portafolio con bajo riesgo. En base a nuestro diálogo, he preparado una estrategia preliminar para una inversión de $${lead.monto_estimado || '15,000'} en nuestro portafolio de Renta Fija.\n\nLe invito a agendar una sesión de 10 minutos para revisar las tasas exactas de este mes. ¿Le parece bien mañana a las 10:00 AM?\n\nAtentamente,\n${req.usuario.nombre}\nAsesor Senior de Inversión | Synapse`
+            };
+            return res.json({ analysis: mockReport });
+        }
+
+        // Si es el cliente real de Gemini
+        const prompt = `
+        Eres un analista de ventas y psicólogo comercial financiero senior. Analiza el historial de conversación de este prospecto y extrae información estratégica.
+        
+        DATOS DEL PROSPECTO:
+        - Correo: ${lead.correo_cliente}
+        - Tipo: ${lead.tipo_cliente}
+        - Monto estimado: $${lead.monto_estimado || 'No especificado'}
+        - Nivel de Riesgo: ${lead.nivel_riesgo || 'No especificado'}
+        - Interés principal: ${lead.interes_principal || 'No especificado'}
+        - Resumen inicial: ${lead.resumen_necesidad || 'No especificado'}
+
+        HISTORIAL DE CHAT:
+        ${JSON.stringify(history)}
+
+        Genera un informe con las siguientes 4 secciones estructuradas para el asesor comercial:
+        1. "perfil_comportamiento": Describe la psicología del cliente (analítico, precavido, impulsivo, etc.), sus motivaciones de inversión y su nivel de urgencia o disposición para comprar.
+        2. "estrategia_comercial": Escribe exactamente 3 recomendaciones numeradas y altamente efectivas sobre cómo abordar comercialmente a este cliente para cerrar el trato.
+        3. "objeciones_respuestas": Identifica la objeción principal (o potencial) en base a su chat y proporciona una respuesta modelo exacta que el asesor pueda usar.
+        4. "email_plantilla": Redacta un correo electrónico formal de seguimiento persuasivo y adaptado al perfil del cliente (escrito en español con modismos profesionales de Ecuador, firmado por el asesor "${req.usuario.nombre}").
+
+        Responde ÚNICAMENTE con un JSON válido con estas 4 claves, sin bloques de código markdown, sin texto adicional:
+        {
+            "perfil_comportamiento": "...",
+            "estrategia_comercial": "...",
+            "objeciones_respuestas": "...",
+            "email_plantilla": "..."
+        }`;
+
+        const interaction = await aiClient.interactions.create({
+            model: 'gemini-3.5-flash',
+            input: prompt,
+            response_format: { type: 'text', mime_type: 'application/json' }
+        });
+
+        let jsonResponse;
+        try {
+            jsonResponse = JSON.parse(interaction.output_text.replace(/```json|```/g, '').trim());
+        } catch (e) {
+            console.warn("La IA no devolvió JSON válido para el análisis avanzado; se usa el mock.", e);
+            jsonResponse = {
+                perfil_comportamiento: "Error al generar perfil con la IA. El cliente muestra interés comercial en " + (lead.interes_principal || "inversiones") + ".",
+                estrategia_comercial: "1. Agendar llamada para re-perfilar.\n2. Confirmar presupuesto estimado.\n3. Presentar portafolio general.",
+                objeciones_respuestas: "Objeción general de seguridad. Respuesta: 'Todos nuestros productos están respaldados y regulados.'",
+                email_plantilla: `Asunto: Seguimiento de Asesoría - Synapse\n\nEstimado/a cliente,\n\nLe escribo para dar seguimiento a su solicitud de asesoría en Synapse. Quedo atento para agendar una llamada de revisión.\n\nAtentamente,\n${req.usuario.nombre}`
+            };
+        }
+
+        res.json({ analysis: jsonResponse });
+    } catch (e) {
+        console.error('❌ ERROR ANALIZANDO PROSPECTO:', e.message || e);
+        res.status(500).json({ error: 'No se pudo generar el análisis avanzado.' });
     }
 });
 

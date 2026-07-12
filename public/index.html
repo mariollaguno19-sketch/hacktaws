@@ -7,6 +7,33 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
+        /* ════════════════════════════════════════════════
+           TOKENS DE MARCA SYNAPSE
+           El brand identity puede cambiar: edita SOLO este
+           bloque y toda la capa de animación/interacción
+           se re-tematiza automáticamente.
+           ════════════════════════════════════════════════ */
+        :root {
+            /* Color de marca */
+            --brand-primary: #c5f82a;                       /* lima neón Synapse */
+            --brand-primary-glow: rgba(197, 248, 42, 0.25); /* halo del primario */
+            --brand-primary-soft: rgba(197, 248, 42, 0.12);
+            --brand-accent: #38bdf8;                        /* azul del núcleo */
+            --brand-mint: #c2f2e9;
+            --brand-pink: #ffd3e8;
+            --surface-0: #090d16;
+            --surface-1: #18191d;
+            --text-strong: #ffffff;
+            --text-muted: #94a3b8;
+
+            /* Movimiento (lenguaje de animación unificado) */
+            --ease-smooth: cubic-bezier(0.16, 1, 0.3, 1);   /* salidas suaves */
+            --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);/* rebote sutil */
+            --dur-fast: 0.16s;
+            --dur-med: 0.35s;
+            --dur-slow: 0.6s;
+        }
+
         /* ── Estilos Globales ── */
         body {
             font-family: 'Outfit', sans-serif;
@@ -15,9 +42,7 @@
             background: #090d16;
             color: #ffffff;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: block;
             box-sizing: border-box;
             overflow-x: hidden;
         }
@@ -172,11 +197,11 @@
            1. VISTA PORTAL INICIO (#home-view)
            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
         .home-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100vh;
+            width: 90%;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 60px 0;
+            box-sizing: border-box;
         }
 
         .bento-grid {
@@ -1226,9 +1251,710 @@
                 display: flex;
             }
         }
+
+        /* ── Nuevos Estilos de Guía y Onboarding ── */
+        .onboarding-hero {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(30, 27, 75, 0.5) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 24px;
+            padding: 32px;
+            margin-bottom: 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .onboarding-hero h2 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+            letter-spacing: -0.03em;
+            color: #ffffff;
+        }
+
+        .onboarding-hero p {
+            font-size: 15px;
+            color: #94a3b8;
+            max-width: 650px;
+            margin: 0 auto 20px auto;
+            line-height: 1.6;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: left;
+            transition: all 0.3s;
+        }
+
+        .feature-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(197, 248, 42, 0.2);
+        }
+
+        .feature-item h4 {
+            font-size: 15px;
+            margin: 0 0 8px 0;
+            color: #c5f82a;
+            font-weight: 600;
+        }
+
+        .feature-item p {
+            font-size: 13px;
+            color: #cbd5e1;
+            margin: 0;
+            line-height: 1.45;
+        }
+
+        /* ── Widget Flotante de Guía Synapse ── */
+        #guide-widget {
+            position: fixed;
+            bottom: 80px;
+            right: 24px;
+            z-index: 9999;
+            font-family: inherit;
+        }
+
+        .guide-trigger {
+            background: #0f172a;
+            color: #ffffff;
+            border: 2px solid #c5f82a;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 10px 25px rgba(197, 248, 42, 0.25);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .guide-trigger:hover {
+            transform: scale(1.05);
+            background: #1e293b;
+            box-shadow: 0 10px 30px rgba(197, 248, 42, 0.4);
+        }
+
+        .guide-trigger .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #c5f82a;
+            border-radius: 50%;
+            animation: pulse-dot-anim 1.5s infinite;
+        }
+
+        @keyframes pulse-dot-anim {
+            0% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.2); opacity: 1; }
+            100% { transform: scale(0.8); opacity: 0.5; }
+        }
+
+        .guide-content-card {
+            display: none;
+            position: absolute;
+            bottom: 55px;
+            right: 0;
+            width: 320px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 24px;
+            box-sizing: border-box;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        .guide-content-card.active {
+            display: block;
+        }
+
+        .guide-content-card h3 {
+            font-size: 16px;
+            margin: 0 0 12px 0;
+            color: #c5f82a;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 8px;
+        }
+
+        .guide-step-list {
+            margin: 0;
+            padding: 0 0 0 16px;
+            font-size: 13.5px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        .guide-step-list li {
+            margin-bottom: 8px;
+        }
+
+        .guide-footer-tip {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 8px;
+            font-style: italic;
+        }
+
+        /* ── Botón y Modal Activa Synapse AI ── */
+        .synapse-toggle-btn {
+            background: transparent;
+            color: #c5f82a;
+            border: 2px solid #c5f82a;
+            padding: 10px 20px;
+            border-radius: 9999px;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 12px rgba(197, 248, 42, 0.2);
+        }
+
+        .synapse-toggle-btn:hover {
+            background: #c5f82a;
+            color: #000000;
+            box-shadow: 0 0 20px rgba(197, 248, 42, 0.5);
+            transform: scale(1.02);
+        }
+
+        .synapse-toggle-btn.active {
+            background: linear-gradient(90deg, #c5f82a, #38bdf8);
+            color: #000000;
+            border-color: transparent;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+        }
+
+        /* Modal Glassmorphism */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(2, 6, 23, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 480px;
+            padding: 32px;
+            box-sizing: border-box;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 20px; right: 20px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 20px;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .modal-close-btn:hover { color: #ffffff; }
+
+        .modal-card h3 {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        .modal-card p {
+            font-size: 14px;
+            color: #94a3b8;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 20px;
+        }
+
+        .status-badge.mock {
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .status-badge.live {
+            background: rgba(197, 248, 42, 0.1);
+            color: #c5f82a;
+            border: 1px solid rgba(197, 248, 42, 0.25);
+        }
+
+        .modal-input-group {
+            margin-bottom: 24px;
+            text-align: left;
+        }
+
+        .modal-input-group label {
+            display: block;
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+        }
+
+        /* ── Estilos de los Widgets Bento ── */
+        .widget-card {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 24px;
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 120px;
+        }
+
+        .widget-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(197, 248, 42, 0.3);
+            box-shadow: 0 10px 30px rgba(197, 248, 42, 0.05);
+        }
+
+        .widget-card .title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .widget-card .value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 8px;
+            letter-spacing: -0.02em;
+        }
+
+        .widget-total { border-left: 4px solid #38bdf8; }
+        .widget-b2b { border-left: 4px solid #c2f2e9; }
+        .widget-b2c { border-left: 4px solid #ffd3e8; }
+        .widget-priority { border-left: 4px solid #c5f82a; }
+
+        /* ── Grid CRM Responsivo (Desktop y Tablet) ── */
+        .crm-layout-grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 24px;
+            align-items: start;
+            margin-top: 24px;
+        }
+
+        .crm-main-col {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .crm-analytics-col {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .crm-layout-grid {
+                grid-template-columns: 1fr;
+            }
+            .crm-analytics-col {
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                display: grid;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .crm-analytics-col {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        /* Estilo del Panel de Auditoría Drawer */
+        .drawer-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(2, 6, 23, 0.7);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 9999;
+            justify-content: flex-end;
+            animation: fadeIn 0.3s;
+        }
+
+        .drawer-overlay.active {
+            display: flex;
+        }
+
+        .drawer-card {
+            background: #0c111d;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            padding: 36px;
+            box-sizing: border-box;
+            box-shadow: -15px 0 35px rgba(0, 0, 0, 0.6);
+            display: flex;
+            flex-direction: column;
+            animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideLeft {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 20px;
+            margin-bottom: 24px;
+        }
+
+        .drawer-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 0;
+            color: #ffffff;
+        }
+
+        .drawer-body {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-right: 4px;
+        }
+
+        .audit-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .audit-section h4 {
+            margin: 0 0 10px 0;
+            font-size: 13.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #38bdf8;
+            font-weight: 600;
+        }
+
+        .audit-section p {
+            margin: 0;
+            font-size: 13.5px;
+            color: #cbd5e1;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .audit-section.email-section h4 {
+            color: #c5f82a;
+        }
+
+        .copy-email-btn {
+            background: rgba(197, 248, 42, 0.1);
+            color: #c5f82a;
+            border: 1px solid rgba(197, 248, 42, 0.3);
+            padding: 8px 16px;
+            border-radius: 9999px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 12px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .copy-email-btn:hover {
+            background: #c5f82a;
+            color: #000000;
+        }
+        
+        .btn-audit {
+            background: rgba(56, 189, 248, 0.1);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            font-size: 13.5px;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-audit:hover {
+            background: #38bdf8;
+            color: #000000;
+            transform: scale(1.02);
+        }
+
+        /* ════════════════════════════════════════════════
+           CAPA DE ANIMACIÓN SYNAPSE (UIX)
+           Consume únicamente los tokens de :root.
+           ════════════════════════════════════════════════ */
+
+        /* ── Keyframes del sistema ── */
+        @keyframes synRise {
+            from { opacity: 0; transform: translateY(18px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes synPop {
+            0%   { opacity: 0; transform: scale(0.94) translateY(8px); }
+            70%  { transform: scale(1.015); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes synShimmer {
+            to { background-position: -200% 0; }
+        }
+        @keyframes synGlowPulse {
+            0%, 100% { box-shadow: 0 0 0 rgba(0,0,0,0); }
+            50%      { box-shadow: 0 0 26px var(--brand-primary-glow); }
+        }
+
+        /* ── Transición entre vistas del SPA ── */
+        .spa-view.active { animation: synRise var(--dur-med) var(--ease-smooth) both; }
+
+        /* ── Entradas escalonadas (se re-disparan al activar cada vista) ── */
+        .features-grid > *, .bento-grid > *, .analytics-grid > * {
+            animation: synRise var(--dur-slow) var(--ease-smooth) both;
+        }
+        .features-grid > *:nth-child(1), .bento-grid > *:nth-child(1), .analytics-grid > *:nth-child(1) { animation-delay: 0.05s; }
+        .features-grid > *:nth-child(2), .bento-grid > *:nth-child(2), .analytics-grid > *:nth-child(2) { animation-delay: 0.12s; }
+        .features-grid > *:nth-child(3), .bento-grid > *:nth-child(3), .analytics-grid > *:nth-child(3) { animation-delay: 0.19s; }
+        .features-grid > *:nth-child(4), .bento-grid > *:nth-child(4), .analytics-grid > *:nth-child(4) { animation-delay: 0.26s; }
+        .features-grid > *:nth-child(5), .analytics-grid > *:nth-child(5) { animation-delay: 0.33s; }
+        .features-grid > *:nth-child(6), .analytics-grid > *:nth-child(6) { animation-delay: 0.40s; }
+
+        /* Tarjetas de leads: aparición con rebote sutil, en cascada */
+        #leads-container .lead-card { animation: synPop var(--dur-med) var(--ease-smooth) both; }
+        #leads-container .lead-card:nth-child(1) { animation-delay: 0.03s; }
+        #leads-container .lead-card:nth-child(2) { animation-delay: 0.09s; }
+        #leads-container .lead-card:nth-child(3) { animation-delay: 0.15s; }
+        #leads-container .lead-card:nth-child(4) { animation-delay: 0.21s; }
+        #leads-container .lead-card:nth-child(5) { animation-delay: 0.27s; }
+        #leads-container .lead-card:nth-child(6) { animation-delay: 0.33s; }
+        #leads-container .lead-card:nth-child(7) { animation-delay: 0.39s; }
+        #leads-container .lead-card:nth-child(8) { animation-delay: 0.45s; }
+
+        /* ── Chat: burbujas con pop desde su lado ── */
+        .msg { animation: synPop var(--dur-med) var(--ease-spring) both; }
+        .msg-user { transform-origin: bottom right; }
+        .msg-bot  { transform-origin: bottom left; }
+
+        /* Indicador de escritura en color de marca */
+        .typing-dot { background: var(--brand-primary); }
+
+        /* ── Micro-interacciones (hover / press / focus) ── */
+        .btn-pill, .btn, .btn-success, .btn-secondary, .btn-warning, .btn-danger, .btn-delete, .nav-tab-btn {
+            transition: transform var(--dur-fast) var(--ease-smooth),
+                        box-shadow var(--dur-fast) var(--ease-smooth),
+                        background var(--dur-fast) ease,
+                        color var(--dur-fast) ease,
+                        border-color var(--dur-fast) ease;
+            will-change: transform;
+        }
+        .btn-pill:hover:not(:disabled),
+        .btn:hover:not(:disabled),
+        .btn-success:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 26px var(--brand-primary-glow);
+        }
+        .btn-pill:active, .btn:active, .btn-success:active,
+        .btn-secondary:active, .nav-tab-btn:active {
+            transform: translateY(0) scale(0.97);
+            transition-duration: 0.07s;
+        }
+
+        /* Tarjetas interactivas: elevación con halo de marca */
+        .bento-card, .widget-card, .lead-card {
+            transition: transform var(--dur-med) var(--ease-smooth),
+                        box-shadow var(--dur-med) var(--ease-smooth),
+                        border-color var(--dur-med) ease;
+        }
+        .bento-card:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--brand-primary-soft); }
+        .widget-card:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3); }
+
+        /* Inputs: foco con halo de marca */
+        input[type="text"], input[type="password"], input[type="email"], textarea, select {
+            transition: border-color var(--dur-fast) ease, box-shadow var(--dur-fast) ease, background var(--dur-fast) ease;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--brand-primary) !important;
+            box-shadow: 0 0 0 3px var(--brand-primary-soft);
+        }
+
+        /* Accesibilidad: anillo de foco visible para navegación por teclado */
+        :focus-visible {
+            outline: 2px solid var(--brand-primary);
+            outline-offset: 2px;
+        }
+
+        /* ── Splash: barra de progreso con brillo de marca ── */
+        .progress-bar {
+            background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent), var(--brand-primary));
+            background-size: 200% 100%;
+            animation: synShimmer 1.4s linear infinite;
+        }
+
+        /* ── Accesibilidad: respeta la preferencia de menos movimiento ── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
     </style>
 </head>
 <body>
+
+    <!-- ── Header Global ── -->
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 16px 5%; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(9, 13, 22, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); position: sticky; top: 0; z-index: 9000; width: 100%; box-sizing: border-box;">
+        <div style="display: flex; align-items: center; gap: 12px; cursor: pointer;" onclick="navigateTo('home')">
+            <div class="splash-logo" style="width: 32px; height: 32px; margin-bottom: 0;">
+                <div class="synapse-circle" style="box-shadow: 0 0 10px rgba(197, 248, 42, 0.3); border-width: 1.5px;"></div>
+                <div class="synapse-core" style="width: 12px; height: 12px; box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);"></div>
+            </div>
+            <span style="font-size: 20px; font-weight: 700; letter-spacing: 0.05em; color: #ffffff;">SYNAPSE</span>
+        </div>
+        <button class="synapse-toggle-btn" id="synapse-toggle-btn" onclick="openSynapseModal()">
+            <span class="pulse-dot"></span> Activa Synapse
+        </button>
+    </header>
+
+    <!-- Modal Activa Synapse -->
+    <div class="modal-overlay" id="synapse-modal">
+        <div class="modal-card">
+            <button class="modal-close-btn" onclick="closeSynapseModal()">✕</button>
+            <h3>Activar Synapse AI</h3>
+            <p>Conecta el motor de Google Gemini 3.5 Flash en tiempo real para chatear con el tutor inteligente y desbloquear auditorías profundas de leads.</p>
+            
+            <div class="status-badge mock" id="synapse-status-badge">Modo Simulado (Mock)</div>
+            
+            <div class="modal-input-group">
+                <label for="user-gemini-key">API Key de Google AI Studio (Opcional):</label>
+                <input type="text" id="user-gemini-key" placeholder="AIzaSy..." style="width: 100%; margin-bottom: 8px;">
+                <small style="color: #64748b; font-size: 11px; display: block; margin-top: 4px; text-align: left;">
+                    Tu API Key no se guarda en el servidor. Se almacena temporalmente en la sesión de tu navegador de forma segura. Consigue una en <a href="https://aistudio.google.com/apikey" target="_blank" style="color:#c5f82a; text-decoration:none;">Google AI Studio</a>.
+                </small>
+            </div>
+            
+            <div style="display: flex; gap: 12px; margin-top: 24px;">
+                <button class="btn-pill btn-pill-dark" style="flex: 1;" onclick="deactivateSynapse()">Usar Simulador</button>
+                <button class="btn-pill" style="flex: 1; background: #c5f82a; color: #000000;" onclick="activateSynapse()">Activar Gemini</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Drawer de Auditoría Avanzada Synapse AI -->
+    <div class="drawer-overlay" id="audit-drawer">
+        <div class="drawer-card">
+            <div class="drawer-header">
+                <h3>Auditoría Avanzada Synapse</h3>
+                <button class="modal-close-btn" style="position: static;" onclick="closeAuditDrawer()">✕</button>
+            </div>
+            <div class="drawer-body">
+                <div class="audit-section">
+                    <h4>Psicología y Comportamiento</h4>
+                    <p id="audit-behavior">Cargando...</p>
+                </div>
+                <div class="audit-section">
+                    <h4>Estrategia Comercial de Cierre</h4>
+                    <p id="audit-strategy">Cargando...</p>
+                </div>
+                <div class="audit-section">
+                    <h4>Objeciones Detectadas y Guión Sugerido</h4>
+                    <p id="audit-objection">Cargando...</p>
+                </div>
+                <div class="audit-section email-section">
+                    <h4>Email de Seguimiento a Medida</h4>
+                    <p id="audit-email" style="font-family: monospace; font-size: 12px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); overflow-x: auto; white-space: pre-wrap;"></p>
+                    <button class="copy-email-btn" onclick="copyAuditEmail()">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copiar al portapapeles
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Widget Guía Synapse -->
+    <div id="guide-widget">
+        <button class="guide-trigger" onclick="toggleGuide()">
+            <span class="pulse-dot"></span>
+            <span>Guía Synapse</span>
+        </button>
+        <div class="guide-content-card" id="guide-content-card">
+            <h3>Guía de Uso Rápido</h3>
+            <div id="guide-steps-container">
+                <!-- Se inyecta dinámicamente según la vista -->
+            </div>
+            <div class="guide-footer-tip">
+                Tip: Haz clic en el botón superior "Activa Synapse" para alternar entre simulación y respuestas reales de Gemini.
+            </div>
+        </div>
+    </div>
 
     <!-- ── Splash Screen (Pantalla de Carga) ── -->
     <div id="splash-screen">
@@ -1248,29 +1974,51 @@
        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
     <div id="home-view" class="spa-view active">
         <div class="home-container">
-            <div class="bento-grid">
-                <div class="bento-card bento-header">
+            <!-- Hero de Onboarding / Explicativo de Synapse -->
+            <div class="onboarding-hero">
+                <h2>Convierte cada conversación en un cliente</h2>
+                <p>Synapse es tu asesor financiero con IA (Google Gemini 3.5 Flash): educa a tus prospectos, los califica en lenguaje natural y llena tu CRM automáticamente — mientras tu ejecutivo mantiene siempre el control (Human-in-the-loop).</p>
+                
+                <div class="features-grid">
+                    <div class="feature-item">
+                        <h4>1. Asistente Conversacional</h4>
+                        <p>Interactúa con los clientes, responde dudas de inversión usando reglas seguras y califica su perfil (B2B/B2C, presupuesto, riesgo).</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>2. Análisis de Perfil</h4>
+                        <p>Detecta el momento oportuno de calificación comercial e inyecta la información estructurada de forma inmediata en el CRM.</p>
+                    </div>
+                    <div class="feature-item">
+                        <h4>3. Bandeja CRM con IA</h4>
+                        <p>Los asesores auditan métricas del pipeline en tiempo real, revisan objeciones y activan análisis profundos del prospecto con Gemini.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bento Grid de Accesos -->
+            <div class="bento-grid" style="width: 100%; max-width: 100%;">
+                <div class="bento-card bento-header" style="min-height: 180px;">
                     <div class="bento-header-content">
-                        <div class="subtitle">Synapse</div>
-                        <h1>IA Asesoría Financiera & CRM</h1>
-                        <p>Plataforma comercial unificada de calificación autónoma y bandeja de entrada analítica.</p>
+                        <div class="subtitle">Empieza en segundos</div>
+                        <h1>¿Por dónde quieres empezar?</h1>
+                        <p>Prueba el asistente como si fueras un cliente, o entra al panel y observa cómo la IA califica tus prospectos en tiempo real.</p>
                     </div>
                 </div>
 
                 <div class="bento-card bento-client">
                     <div class="card-title-area">
-                        <h2>Portal del Cliente</h2>
-                        <p>Inicie una sesión de asesoría y perfílese comercialmente con nuestro asistente virtual.</p>
+                        <h2>Habla con tu asesor IA</h2>
+                        <p>Cuéntale tus metas y recibe orientación de inversión personalizada en minutos. Sin formularios: solo una conversación.</p>
                     </div>
-                    <button class="btn-pill" onclick="navigateTo('client')">Ingresar</button>
+                    <button class="btn-pill" onclick="navigateTo('client')">Comenzar ahora →</button>
                 </div>
 
                 <div class="bento-card bento-admin">
                     <div class="card-title-area">
-                        <h2>Bandeja CRM</h2>
-                        <p>Monitoree las analíticas de leads y apruebe las propuestas comerciales de la IA.</p>
+                        <h2>Panel del Ejecutivo</h2>
+                        <p>Revisa tus leads ya calificados por la IA, analiza objeciones y aprueba propuestas con un solo clic.</p>
                     </div>
-                    <button class="btn-pill" onclick="navigateTo('admin')">Gestionar</button>
+                    <button class="btn-pill" onclick="navigateTo('admin')">Entrar al panel →</button>
                 </div>
             </div>
         </div>
@@ -1387,7 +2135,7 @@
                     </div>
                 </div>
 
-                <!-- 1. KPIs Desktop (Se ocultan en móvil) -->
+                <!-- KPIs Superiores (Widgets Bento) -->
                 <div class="desktop-kpis">
                     <div class="widget-card widget-total">
                         <div class="title">Total Prospectos</div>
@@ -1407,148 +2155,149 @@
                     </div>
                 </div>
 
-                <!-- 2. KPIs Móviles (Vista Estilo Aplicación Nativa) -->
-                <div class="mobile-crm-view">
-                    <!-- Tarjeta VISA -->
-                    <div class="visa-card">
-                        <div class="visa-header">
-                            <div>
-                                <div class="brand-name">VISA</div>
-                                <div class="card-type">Debit Card</div>
+                <!-- Grid Layout Principal responsivo para Desktop y Tablet -->
+                <div class="crm-layout-grid">
+                    <!-- Columna Principal: Filtros y Lista de Leads -->
+                    <div class="crm-main-col">
+                        <!-- Barra de Filtros -->
+                        <div class="filter-bar">
+                            <div class="filter-group">
+                                <label for="filter-type">Tipo de Cliente:</label>
+                                <select id="filter-type" onchange="applyFilters()">
+                                    <option value="ALL">Todos</option>
+                                    <option value="B2B">Corporativo (B2B)</option>
+                                    <option value="B2C">Personal (B2C)</option>
+                                </select>
                             </div>
-                            <div class="balance-block">
-                                <div class="balance-label">Volumen Estimado</div>
-                                <div class="balance-value" id="mobile-kpi-total-monto">$ 24,281.12</div>
+                            <div class="filter-group">
+                                <label for="sort-leads">Ordenar por:</label>
+                                <select id="sort-leads" onchange="applyFilters()">
+                                    <option value="RECENT">Más recientes</option>
+                                    <option value="PRIORITY_DESC">Mayor prioridad</option>
+                                    <option value="PRIORITY_ASC">Menor prioridad</option>
+                                </select>
                             </div>
                         </div>
-                        <div class="card-footer">
-                            <div class="card-number">.... 5419</div>
-                            <div>
-                                <div class="card-info-lbl">Vencimiento</div>
-                                <div class="card-info-val">07 / 23</div>
-                            </div>
-                        </div>
+
+                        <!-- Contenedor de Leads -->
+                        <div id="leads-container"></div>
                     </div>
 
-                    <!-- Selectores -->
-                    <div class="mobile-selectors-row">
-                        <select id="mobile-filter-lead-type">
-                            <option value="Expenses">Prospectos</option>
-                        </select>
-                        <div class="toggle-month-year">
-                            <button class="toggle-btn active">Mes</button>
-                            <button class="toggle-btn">Año</button>
-                        </div>
-                    </div>
-
-                    <!-- Gráficos Circulares SVG -->
-                    <div class="mobile-charts-row">
-                        <!-- Donut Chart B2B vs B2C -->
-                        <div class="chart-container-card">
-                            <div class="chart-title-mobile">Distribución B2B/B2C</div>
-                            <div class="donut-wrapper">
-                                <svg class="donut-svg" width="100" height="100">
-                                    <circle class="donut-bg" cx="50" cy="50" r="40"></circle>
-                                    <circle class="donut-segment donut-segment-1" id="donut-segment-b2b" cx="50" cy="50" r="40" stroke-dasharray="0 251" stroke-dashoffset="0"></circle>
-                                    <circle class="donut-segment donut-segment-2" id="donut-segment-b2c" cx="50" cy="50" r="40" stroke-dasharray="0 251" stroke-dashoffset="0"></circle>
-                                </svg>
-                                <div class="donut-center-text" id="donut-percentage">0%</div>
-                            </div>
-                            <div class="chart-legend-list">
-                                <div class="legend-item">
-                                    <div class="legend-color-label">
-                                        <div class="legend-dot" style="background:#38bdf8;"></div>
-                                        <span>B2B (Corp.)</span>
-                                    </div>
-                                    <span class="value" id="legend-val-b2b">0%</span>
+                    <!-- Columna de Analíticas (Visible en Desktop/Tablet a la derecha, y en móvil abajo) -->
+                    <div class="crm-analytics-col">
+                        <!-- Tarjeta VISA -->
+                        <div class="visa-card">
+                            <div class="visa-header">
+                                <div>
+                                    <div class="brand-name">VISA</div>
+                                    <div class="card-type">Debit Card</div>
                                 </div>
-                                <div class="legend-item">
-                                    <div class="legend-color-label">
-                                        <div class="legend-dot" style="background:#ffd3e8;"></div>
-                                        <span>B2C (Pers.)</span>
-                                    </div>
-                                    <span class="value" id="legend-val-b2c">0%</span>
+                                <div class="balance-block">
+                                    <div class="balance-label">Volumen Estimado</div>
+                                    <div class="balance-value" id="mobile-kpi-total-monto">$ 0.00</div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                <div class="card-number">.... 5419</div>
+                                <div>
+                                    <div class="card-info-lbl">Vencimiento</div>
+                                    <div class="card-info-val">07 / 23</div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Pie Chart Estados -->
-                        <div class="chart-container-card">
-                            <div class="chart-title-mobile">Estados de Leads</div>
-                            <div class="pie-wrapper">
-                                <!-- Pie Chart SVG Segmentado -->
-                                <svg width="100" height="100" viewBox="0 0 32 32" style="transform: rotate(-90deg); border-radius: 50%;">
-                                    <circle r="16" cx="16" cy="16" fill="#c5f82a" /> <!-- Aprobados (Verde) -->
-                                    <circle id="pie-segment-pending" r="16" cx="16" cy="16" fill="#ffd3e8" stroke-dasharray="0 100" /> <!-- Pendientes (Rosa) -->
-                                    <circle id="pie-segment-rejected" r="16" cx="16" cy="16" fill="#fb923c" stroke-dasharray="0 100" /> <!-- Rechazados (Naranja) -->
-                                </svg>
-                            </div>
-                            <div class="chart-legend-list">
-                                <div class="legend-item">
-                                    <div class="legend-color-label">
-                                        <div class="legend-dot" style="background:#c5f82a;"></div>
-                                        <span>Aprobados</span>
-                                    </div>
-                                    <span class="value" id="legend-val-app">0%</span>
-                                </div>
-                                <div class="legend-item">
-                                    <div class="legend-color-label">
-                                        <div class="legend-dot" style="background:#ffd3e8;"></div>
-                                        <span>Pendientes</span>
-                                    </div>
-                                    <span class="value" id="legend-val-pen">0%</span>
-                                </div>
+                        <!-- Selectores Opcionales del Dashboard -->
+                        <div class="mobile-selectors-row" style="margin-bottom: 8px;">
+                            <span style="font-size: 14px; font-weight: 700; color: #94a3b8;">Estadísticas del Pipeline</span>
+                            <div class="toggle-month-year">
+                                <button class="toggle-btn active" style="padding: 4px 12px; font-size: 11px;">Mes</button>
+                                <button class="toggle-btn" style="padding: 4px 12px; font-size: 11px;">Año</button>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Gráfico de Tendencia SVG Wave -->
-                    <div class="trend-container-card">
-                        <div class="trend-header-mobile">
-                            <select>
-                                <option>Prospectos Recibidos</option>
-                            </select>
-                            <div class="trend-badge-mobile">Nov <span id="trend-val-leads">0</span></div>
+                        <!-- Gráficos Circulares SVG -->
+                        <div class="mobile-charts-row" style="grid-template-columns: 1fr; gap: 16px;">
+                            <!-- Donut Chart B2B vs B2C -->
+                            <div class="chart-container-card">
+                                <div class="chart-title-mobile">Distribución B2B/B2C</div>
+                                <div class="donut-wrapper">
+                                    <svg class="donut-svg" width="100" height="100">
+                                        <circle class="donut-bg" cx="50" cy="50" r="40"></circle>
+                                        <circle class="donut-segment donut-segment-1" id="donut-segment-b2b" cx="50" cy="50" r="40" stroke-dasharray="0 251" stroke-dashoffset="0"></circle>
+                                        <circle class="donut-segment donut-segment-2" id="donut-segment-b2c" cx="50" cy="50" r="40" stroke-dasharray="0 251" stroke-dashoffset="0"></circle>
+                                    </svg>
+                                    <div class="donut-center-text" id="donut-percentage">0%</div>
+                                </div>
+                                <div class="chart-legend-list">
+                                    <div class="legend-item">
+                                        <div class="legend-color-label">
+                                            <div class="legend-dot" style="background:#38bdf8;"></div>
+                                            <span>B2B (Corp.)</span>
+                                        </div>
+                                        <span class="value" id="legend-val-b2b">0%</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color-label">
+                                            <div class="legend-dot" style="background:#ffd3e8;"></div>
+                                            <span>B2C (Pers.)</span>
+                                        </div>
+                                        <span class="value" id="legend-val-b2c">0%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pie Chart Estados -->
+                            <div class="chart-container-card">
+                                <div class="chart-title-mobile">Estados de Leads</div>
+                                <div class="pie-wrapper">
+                                    <svg width="100" height="100" viewBox="0 0 32 32" style="transform: rotate(-90deg); border-radius: 50%;">
+                                        <circle r="16" cx="16" cy="16" fill="#c5f82a" /> <!-- Aprobados (Verde) -->
+                                        <circle id="pie-segment-pending" r="16" cx="16" cy="16" fill="#ffd3e8" stroke-dasharray="0 100" /> <!-- Pendientes (Rosa) -->
+                                        <circle id="pie-segment-rejected" r="16" cx="16" cy="16" fill="#fb923c" stroke-dasharray="0 100" /> <!-- Rechazados (Naranja) -->
+                                    </svg>
+                                </div>
+                                <div class="chart-legend-list">
+                                    <div class="legend-item">
+                                        <div class="legend-color-label">
+                                            <div class="legend-dot" style="background:#c5f82a;"></div>
+                                            <span>Aprobados</span>
+                                        </div>
+                                        <span class="value" id="legend-val-app">0%</span>
+                                    </div>
+                                    <div class="legend-item">
+                                        <div class="legend-color-label">
+                                            <div class="legend-dot" style="background:#ffd3e8;"></div>
+                                            <span>Pendientes</span>
+                                        </div>
+                                        <span class="value" id="legend-val-pen">0%</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <!-- SVG Neon wave line -->
-                        <svg class="trend-chart-svg" viewBox="0 0 300 80" preserveAspectRatio="none">
-                            <path d="M 0 60 C 40 55, 60 62, 100 58 C 140 54, 160 70, 200 68 C 240 66, 260 65, 300 30" fill="none" stroke="#c5f82a" stroke-width="3" stroke-linecap="round"></path>
-                        </svg>
-                        <div class="trend-axis-labels">
-                            <span>Abr</span>
-                            <span>May</span>
-                            <span>Jun</span>
-                            <span>Jul</span>
-                            <span>Ago</span>
-                            <span>Sep</span>
-                            <span>Oct</span>
-                            <span class="active">Nov</span>
+
+                        <!-- Gráfico de Tendencia SVG Wave -->
+                        <div class="trend-container-card" style="margin-bottom: 24px;">
+                            <div class="trend-header-mobile">
+                                <span style="font-size: 14px; font-weight: 600; color: #e4e4e7;">Flujo Histórico</span>
+                                <div class="trend-badge-mobile">Nov <span id="trend-val-leads">0</span></div>
+                            </div>
+                            <svg class="trend-chart-svg" viewBox="0 0 300 80" preserveAspectRatio="none">
+                                <path d="M 0 60 C 40 55, 60 62, 100 58 C 140 54, 160 70, 200 68 C 240 66, 260 65, 300 30" fill="none" stroke="#c5f82a" stroke-width="3" stroke-linecap="round"></path>
+                            </svg>
+                            <div class="trend-axis-labels">
+                                <span>Abr</span>
+                                <span>May</span>
+                                <span>Jun</span>
+                                <span>Jul</span>
+                                <span>Ago</span>
+                                <span>Sep</span>
+                                <span>Oct</span>
+                                <span class="active">Nov</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Barra de Filtros -->
-                <div class="filter-bar">
-                    <div class="filter-group">
-                        <label for="filter-type">Tipo de Cliente:</label>
-                        <select id="filter-type" onchange="applyFilters()">
-                            <option value="ALL">Todos</option>
-                            <option value="B2B">Corporativo (B2B)</option>
-                            <option value="B2C">Personal (B2C)</option>
-                        </select>
-                    </div>
-                    <div class="filter-group">
-                        <label for="sort-leads">Ordenar por:</label>
-                        <select id="sort-leads" onchange="applyFilters()">
-                            <option value="RECENT">Más recientes</option>
-                            <option value="PRIORITY_DESC">Mayor prioridad</option>
-                            <option value="PRIORITY_ASC">Menor prioridad</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Contenedor de Leads -->
-                <div id="leads-container"></div>
+            </div>
             </div>
         </div>
     </div>
@@ -1598,6 +2347,10 @@
                     splash.style.visibility = 'hidden';
                 }
             }, 1500);
+
+            // Inicializar estados de Synapse y la Guía
+            syncSynapseState();
+            updateGuideSteps('home');
         });
 
         // ── 1. ENRUTADOR CLIENT-SIDE (Navegación) ──
@@ -1610,6 +2363,9 @@
             document.querySelectorAll('.nav-tab-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
+
+            // Actualizar los pasos de la guía flotante
+            updateGuideSteps(viewName);
 
             if (viewName === 'home') {
                 document.getElementById('home-view').classList.add('active');
@@ -1679,9 +2435,14 @@
             chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
+                const headers = { 'Content-Type': 'application/json' };
+                const userGeminiKey = sessionStorage.getItem('gemini_api_key');
+                if (userGeminiKey) {
+                    headers['X-Gemini-Key'] = userGeminiKey;
+                }
                 const response = await fetch('/api/chat', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify({ message: text, previous_id: currentInteractionId })
                 });
                 
@@ -1738,9 +2499,14 @@
             finishBtn.innerText = "Procesando perfil y transmitiendo...";
 
             try {
+                const headers = { 'Content-Type': 'application/json' };
+                const userGeminiKey = sessionStorage.getItem('gemini_api_key');
+                if (userGeminiKey) {
+                    headers['X-Gemini-Key'] = userGeminiKey;
+                }
                 const res = await fetch('/api/evaluate', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify({ email: currentEmail, history: chatHistoryBackup })
                 });
                 const data = await res.json();
@@ -1792,9 +2558,14 @@
         }
 
         async function fetchAutenticado(url, opciones = {}) {
-            opciones.headers = Object.assign({}, opciones.headers, {
+            const headers = Object.assign({}, opciones.headers, {
                 'Authorization': `Bearer ${obtenerToken()}`
             });
+            const userGeminiKey = sessionStorage.getItem('gemini_api_key');
+            if (userGeminiKey) {
+                headers['X-Gemini-Key'] = userGeminiKey;
+            }
+            opciones.headers = headers;
             const res = await fetch(url, opciones);
             if (res.status === 401) {
                 limpiarSesion();
@@ -1900,7 +2671,7 @@
             document.getElementById('kpi-priority').textContent = avgPri.toFixed(1);
 
             // KPIs Móviles Estilo VISA & Gráficos SVG
-            const totalMonto = leads.length * 1000 + 4281.12; // volumen estimado dinámico
+            const totalMonto = leads.reduce((sum, l) => sum + (Number(l.monto_estimado) || 0), 0);
             document.getElementById('mobile-kpi-total-monto').textContent = `$ ${totalMonto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             document.getElementById('trend-val-leads').textContent = leads.length;
 
@@ -2094,6 +2865,13 @@
             leftGroup.appendChild(btnEditar);
             leftGroup.appendChild(btnRechazar);
 
+            const btnAudit = document.createElement('button');
+            btnAudit.className = 'btn-audit';
+            btnAudit.style.marginLeft = '8px';
+            btnAudit.textContent = '🔍 Auditoría IA Avanzada';
+            btnAudit.addEventListener('click', () => openAuditDrawer(lead.id));
+            leftGroup.appendChild(btnAudit);
+
             const rightGroup = document.createElement('div');
             const btnEliminar = document.createElement('button');
             btnEliminar.className = 'btn-action btn-delete';
@@ -2142,9 +2920,214 @@
             }
         }
 
+        // ── CONTROLADOR ACTIVA SYNAPSE ──
+        function openSynapseModal() {
+            document.getElementById('synapse-modal').classList.add('active');
+            const savedKey = sessionStorage.getItem('gemini_api_key') || '';
+            document.getElementById('user-gemini-key').value = savedKey;
+            syncSynapseState();
+        }
+
+        function closeSynapseModal() {
+            document.getElementById('synapse-modal').classList.remove('active');
+        }
+
+        function activateSynapse() {
+            const key = document.getElementById('user-gemini-key').value.trim();
+            if (key) {
+                sessionStorage.setItem('gemini_api_key', key);
+                alert("Synapse AI activado con tu API Key personal de Gemini.");
+            } else {
+                sessionStorage.removeItem('gemini_api_key');
+                alert("Synapse AI activado usando la configuración por defecto del servidor.");
+            }
+            closeSynapseModal();
+            syncSynapseState();
+        }
+
+        function deactivateSynapse() {
+            sessionStorage.removeItem('gemini_api_key');
+            alert("Synapse AI desactivado. Se utilizarán respuestas simuladas locales.");
+            closeSynapseModal();
+            syncSynapseState();
+        }
+
+        function syncSynapseState() {
+            const userGeminiKey = sessionStorage.getItem('gemini_api_key');
+            const toggleBtn = document.getElementById('synapse-toggle-btn');
+            const badge = document.getElementById('synapse-status-badge');
+            
+            if (userGeminiKey) {
+                if (toggleBtn) {
+                    toggleBtn.classList.add('active');
+                    toggleBtn.innerHTML = '<span class="pulse-dot"></span> Synapse Activo (Gemini)';
+                }
+                if (badge) {
+                    badge.className = "status-badge live";
+                    badge.textContent = "Gemini Activo (API Key)";
+                }
+            } else {
+                if (toggleBtn) {
+                    toggleBtn.classList.remove('active');
+                    toggleBtn.innerHTML = '<span class="pulse-dot" style="background:#f87171;"></span> Activa Synapse';
+                }
+                if (badge) {
+                    badge.className = "status-badge mock";
+                    badge.textContent = "Modo Simulado (Mock)";
+                }
+            }
+        }
+
+        // ── CONTROLADOR DE GUÍA INTERACTIVA ──
+        let guideOpen = false;
+
+        function toggleGuide() {
+            const card = document.getElementById('guide-content-card');
+            guideOpen = !guideOpen;
+            if (guideOpen) {
+                card.classList.add('active');
+            } else {
+                card.classList.remove('active');
+            }
+        }
+
+        const guideSteps = {
+            home: `
+                <ol class="guide-step-list">
+                    <li>Elige por dónde empezar.</li>
+                    <li>Entra a <strong>Habla con tu asesor IA</strong> y simula ser un prospecto interesado en invertir.</li>
+                    <li>O entra al <strong>Panel del Ejecutivo</strong> (usuario: <code>admin</code> / clave: <code>admin</code>) para gestionar los prospectos como asesor.</li>
+                </ol>
+            `,
+            client: `
+                <ol class="guide-step-list">
+                    <li><strong>Iniciar sesión</strong>: Ingresa tu correo electrónico para que el asistente pueda perfilarte.</li>
+                    <li><strong>Conversa con el Tutor IA</strong>: Hazle consultas financieras o dile cuánto deseas invertir (ej: "hola, deseo invertir $25,000 en fondos mutuos como empresa B2B").</li>
+                    <li><strong>Espera la calificación</strong>: Cuando completes los datos, la IA activará automáticamente un botón verde de transmisión.</li>
+                    <li><strong>Transmitir</strong>: Haz clic en el botón para guardar tu perfil en el CRM de Supabase.</li>
+                </ol>
+            `,
+            admin: `
+                <ol class="guide-step-list">
+                    <li><strong>Audita KPIs reales</strong>: Revisa el pipeline financiero y la distribución de leads calculados de la base de datos.</li>
+                    <li><strong>Filtra</strong>: Usa la barra de filtros para ordenar por prioridad o clasificar por B2B/B2C.</li>
+                    <li><strong>Revisa propuestas</strong>: Observa las notas resumidas y las acciones sugeridas por la IA para cada lead.</li>
+                    <li><strong>Acción Avanzada</strong>: Haz clic en <strong>Auditoría IA Avanzada</strong> en cualquier prospecto para ver el análisis psicológico y copiar plantillas de email autogeneradas.</li>
+                </ol>
+            `
+        };
+
+        function updateGuideSteps(viewName) {
+            const container = document.getElementById('guide-steps-container');
+            if (container) {
+                container.innerHTML = guideSteps[viewName] || guideSteps['home'];
+            }
+        }
+
+        // ── CONTROLADOR DE DRAWER DE AUDITORÍA AVANZADA ──
+        let currentAuditEmail = "";
+
+        async function openAuditDrawer(leadId) {
+            const drawer = document.getElementById('audit-drawer');
+            document.getElementById('audit-behavior').textContent = "Analizando comportamiento con la IA de Synapse...";
+            document.getElementById('audit-strategy').textContent = "Buscando estrategias comerciales recomendadas...";
+            document.getElementById('audit-objection').textContent = "Procesando objeciones conversacionales...";
+            document.getElementById('audit-email').textContent = "Generando plantilla de correo personalizada...";
+            
+            drawer.classList.add('active');
+
+            try {
+                const res = await fetchAutenticado(`/api/leads/${leadId}/synapse-analysis`);
+                const data = await res.json();
+                
+                if (!res.ok || data.error) {
+                    alert("Error obteniendo análisis avanzado de la IA: " + (data.error || "Desconocido"));
+                    closeAuditDrawer();
+                    return;
+                }
+
+                const analysis = data.analysis;
+                document.getElementById('audit-behavior').textContent = analysis.perfil_comportamiento || "No disponible.";
+                document.getElementById('audit-strategy').textContent = analysis.estrategia_comercial || "No disponible.";
+                document.getElementById('audit-objection').textContent = analysis.objeciones_respuestas || "No disponible.";
+                
+                const emailContent = analysis.email_plantilla || "";
+                document.getElementById('audit-email').textContent = emailContent;
+                currentAuditEmail = emailContent;
+            } catch (e) {
+                if (e.message !== 'Sesión no válida') {
+                    alert("Error de red intentando realizar la auditoría con Gemini.");
+                }
+                closeAuditDrawer();
+            }
+        }
+
+        function closeAuditDrawer() {
+            document.getElementById('audit-drawer').classList.remove('active');
+        }
+
+        function copyAuditEmail() {
+            if (!currentAuditEmail) return;
+            navigator.clipboard.writeText(currentAuditEmail).then(() => {
+                alert("Plantilla de correo copiada al portapapeles con éxito.");
+            }).catch(() => {
+                alert("No se pudo copiar automáticamente. Por favor, selecciona el texto manualmente.");
+            });
+        }
+
         document.getElementById('admin-pass').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') loginAdmin();
         });
+
+        // ════════════════════════════════════════════════
+        // CAPA DE ANIMACIÓN SYNAPSE (JS)
+        // Contadores KPI animados. Envuelve updateKPIs sin
+        // modificar su lógica; respeta prefers-reduced-motion.
+        // ════════════════════════════════════════════════
+        (function () {
+            const permiteMovimiento = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            function animarNumero(el, desde, hacia, decimales) {
+                if (!permiteMovimiento || desde === hacia) {
+                    el.textContent = hacia.toFixed(decimales);
+                    return;
+                }
+                const inicio = performance.now();
+                const duracion = 650;
+                function paso(t) {
+                    const p = Math.min((t - inicio) / duracion, 1);
+                    const suavizado = 1 - Math.pow(1 - p, 3); // ease-out cúbico
+                    el.textContent = (desde + (hacia - desde) * suavizado).toFixed(decimales);
+                    if (p < 1) requestAnimationFrame(paso);
+                }
+                requestAnimationFrame(paso);
+            }
+
+            if (typeof updateKPIs === 'function') {
+                const updateKPIsOriginal = updateKPIs;
+                updateKPIs = function (leads) {
+                    const ids = [
+                        { id: 'kpi-total', dec: 0 },
+                        { id: 'kpi-b2b', dec: 0 },
+                        { id: 'kpi-b2c', dec: 0 },
+                        { id: 'kpi-priority', dec: 1 }
+                    ];
+                    const previos = ids.map(({ id }) => {
+                        const el = document.getElementById(id);
+                        return el ? (parseFloat(el.textContent) || 0) : 0;
+                    });
+
+                    updateKPIsOriginal(leads);
+
+                    ids.forEach(({ id, dec }, i) => {
+                        const el = document.getElementById(id);
+                        if (!el) return;
+                        const destino = parseFloat(el.textContent) || 0;
+                        animarNumero(el, previos[i], destino, dec);
+                    });
+                };
+            }
+        })();
     </script>
 </body>
 </html>

@@ -12,25 +12,22 @@
             margin: 0;
             padding: 0;
             background: #090d16;
-            color: #f1f5f9;
+            color: #ffffff;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            box-sizing: border-box;
         }
 
-        .container {
-            display: flex;
+        .bento-container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 16px;
             width: 95%;
             max-width: 1100px;
             height: 85vh;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            box-sizing: border-box;
         }
 
         /* Enlace de regreso */
@@ -43,66 +40,91 @@
             font-size: 14px;
             font-weight: 500;
             transition: color 0.2s;
-            display: flex;
-            align-items: center;
         }
 
         .back-link:hover {
             color: #ffffff;
         }
 
-        /* Panel lateral de base de conocimientos */
-        .sidebar {
-            width: 320px;
-            background: rgba(2, 6, 23, 0.4);
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 32px;
+        /* Sidebar Bento Stack */
+        .sidebar-stack {
             display: flex;
             flex-direction: column;
-            box-sizing: border-box;
+            gap: 16px;
             overflow-y: auto;
+            box-sizing: border-box;
         }
 
-        .sidebar-brand {
+        .bento-sidebar-card {
+            border-radius: 20px;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .sidebar-header {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        .sidebar-header .brand {
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.15em;
             color: #38bdf8;
-            margin-bottom: 24px;
+            margin-bottom: 8px;
         }
 
-        .sidebar h2 {
+        .sidebar-header h2 {
             font-size: 20px;
-            font-weight: 600;
-            margin: 0 0 16px 0;
-            color: #ffffff;
-        }
-
-        .info-block {
-            margin-bottom: 24px;
-        }
-
-        .info-block h3 {
-            font-size: 14px;
-            font-weight: 600;
-            margin: 0 0 8px 0;
-            color: #cbd5e1;
-        }
-
-        .info-block p {
-            font-size: 13.5px;
-            font-weight: 300;
-            line-height: 1.5;
-            color: #94a3b8;
+            font-weight: 700;
             margin: 0;
+            letter-spacing: -0.02em;
         }
 
-        /* Panel principal (Chat / Login) */
-        .main-content {
-            flex: 1;
+        .card-renta-fija {
+            background: #c5f82a; /* Verde Neón */
+            color: #000000;
+        }
+
+        .card-fondos-mutuos {
+            background: #c2f2e9; /* Menta */
+            color: #000000;
+        }
+
+        .card-regla-oro {
+            background: #ffd3e8; /* Rosa Pastel */
+            color: #000000;
+        }
+
+        .bento-sidebar-card h3 {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .bento-sidebar-card p {
+            font-size: 13.5px;
+            font-weight: 400;
+            line-height: 1.45;
+            margin: 0;
+            opacity: 0.8;
+        }
+
+        /* Panel de chat principal */
+        .chat-bento-card {
+            background: rgba(15, 23, 42, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
+            padding: 32px;
+            box-sizing: border-box;
+            overflow: hidden;
             position: relative;
         }
 
@@ -122,40 +144,42 @@
         #login-section {
             justify-content: center;
             align-items: center;
-            padding: 40px;
             text-align: center;
         }
 
         #login-section h2 {
             font-size: 28px;
-            font-weight: 600;
+            font-weight: 700;
             margin: 0 0 12px 0;
-            color: #ffffff;
+            letter-spacing: -0.02em;
         }
 
         #login-section p {
             font-size: 15px;
-            color: #94a3b8;
-            margin: 0 0 24px 0;
             font-weight: 300;
+            color: #94a3b8;
+            margin: 0 0 32px 0;
+            max-width: 400px;
+            line-height: 1.5;
         }
 
         input[type="email"], input[type="text"] {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: #ffffff;
-            padding: 14px 18px;
-            border-radius: 8px;
+            padding: 14px 20px;
+            border-radius: 9999px; /* Input píldora */
             font-size: 15px;
             font-family: inherit;
-            width: 280px;
+            width: 320px;
             box-sizing: border-box;
             outline: none;
             transition: all 0.3s;
+            text-align: center;
         }
 
         input[type="email"]:focus, input[type="text"]:focus {
-            border-color: #38bdf8;
+            border-color: #c5f82a;
             background: rgba(255, 255, 255, 0.06);
         }
 
@@ -164,43 +188,52 @@
             cursor: not-allowed;
         }
 
-        .btn {
-            background: #0284c7;
-            color: #ffffff;
+        /* Botón píldora */
+        .btn-pill {
+            background: #ffffff;
+            color: #000000;
             border: none;
-            padding: 14px 28px;
-            border-radius: 8px;
+            padding: 14px 32px;
+            border-radius: 9999px;
             cursor: pointer;
             font-size: 15px;
-            font-weight: 500;
+            font-weight: 600;
             font-family: inherit;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            display: inline-block;
         }
 
-        .btn:hover:not(:disabled) {
-            background: #0ea5e9;
+        .btn-pill:hover:not(:disabled) {
+            background: #e2e8f0;
+            transform: scale(1.02);
         }
 
-        .btn:disabled {
+        .btn-pill:disabled {
             background: rgba(255, 255, 255, 0.1);
-            color: #94a3b8;
+            color: #64748b;
             cursor: not-allowed;
-            border-color: transparent;
         }
 
         /* Pantalla Chat */
         #chat-section {
-            padding: 24px;
+            display: none;
+            height: 100%;
+        }
+
+        #chat-section.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
 
         .chat-header {
-            margin-bottom: 16px;
+            margin-bottom: 20px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             padding-bottom: 16px;
         }
 
         .chat-header h3 {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 500;
             margin: 0;
             color: #94a3b8;
@@ -216,22 +249,24 @@
             overflow-y: auto;
             border: 1px solid rgba(255, 255, 255, 0.06);
             background: rgba(2, 6, 23, 0.2);
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 16px;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
             gap: 16px;
+            box-sizing: border-box;
         }
 
         .msg {
             max-width: 75%;
-            padding: 12px 16px;
-            border-radius: 10px;
+            padding: 14px 18px;
+            border-radius: 18px;
             line-height: 1.5;
             font-size: 14.5px;
             word-wrap: break-word;
             animation: fadeIn 0.3s ease-out forwards;
+            box-sizing: border-box;
         }
 
         @keyframes fadeIn {
@@ -240,15 +275,16 @@
         }
 
         .msg-user {
-            background: #1e3a8a;
-            color: #ffffff;
+            background: #c5f82a; /* Verde Neón */
+            color: #000000;
             margin-left: auto;
             border-bottom-right-radius: 2px;
+            font-weight: 500;
         }
 
         .msg-bot {
-            background: rgba(255, 255, 255, 0.05);
-            color: #e2e8f0;
+            background: rgba(255, 255, 255, 0.04);
+            color: #f1f5f9;
             border: 1px solid rgba(255, 255, 255, 0.06);
             margin-right: auto;
             border-bottom-left-radius: 2px;
@@ -257,10 +293,10 @@
         /* Indicador de escritura */
         .typing-indicator {
             align-self: flex-start;
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.06);
             padding: 12px 18px;
-            border-radius: 10px;
+            border-radius: 14px;
             border-bottom-left-radius: 2px;
             display: none;
             gap: 4px;
@@ -290,15 +326,16 @@
 
         .chat-input-area input {
             flex: 1;
+            text-align: left;
         }
 
         /* Banner de finalización */
         #finish-container {
             display: none;
-            background: rgba(6, 95, 70, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            padding: 20px;
-            border-radius: 10px;
+            background: rgba(197, 248, 42, 0.06);
+            border: 1px solid rgba(197, 248, 42, 0.25);
+            padding: 24px;
+            border-radius: 16px;
             text-align: center;
             margin-top: 16px;
             animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -312,33 +349,36 @@
         #finish-container p {
             margin: 0;
             font-size: 14px;
-            color: #a7f3d0;
+            color: #cbd5e1;
             line-height: 1.5;
         }
 
         #finish-container p.title {
-            font-weight: 600;
+            font-weight: 700;
             font-size: 16px;
-            margin-bottom: 4px;
-            color: #34d399;
+            margin-bottom: 6px;
+            color: #c5f82a;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .btn-success {
-            background: #059669;
-            color: #ffffff;
+            background: #c5f82a;
+            color: #000000;
             border: none;
             width: 100%;
             padding: 14px;
             font-size: 15px;
-            font-weight: 600;
-            border-radius: 8px;
+            font-weight: 700;
+            border-radius: 9999px;
             cursor: pointer;
-            margin-top: 12px;
-            transition: all 0.3s;
+            margin-top: 16px;
+            transition: all 0.2s;
         }
 
         .btn-success:hover:not(:disabled) {
-            background: #10b981;
+            background: #d4fa55;
+            transform: scale(1.01);
         }
     </style>
 </head>
@@ -346,37 +386,39 @@
 
     <a href="index.html" class="back-link">Regresar al inicio</a>
 
-    <div class="container">
-        <!-- Panel lateral informativo -->
-        <div class="sidebar">
-            <div class="sidebar-brand">Futuro Academy</div>
-            <h2>Asesoría Financiera</h2>
+    <div class="bento-container">
+        <!-- Sidebar Bento Stack -->
+        <div class="sidebar-stack">
+            <div class="bento-sidebar-card sidebar-header">
+                <div class="brand">Futuro Academy</div>
+                <h2>Asesoría Financiera</h2>
+            </div>
             
-            <div class="info-block">
+            <div class="bento-sidebar-card card-renta-fija">
                 <h3>Renta Fija</h3>
-                <p>Instrumentos de inversión con rentabilidad pactada de antemano, tales como Bonos y Pólizas de acumulación. Recomendado para perfiles con baja tolerancia al riesgo.</p>
+                <p>Instrumentos con rentabilidad pactada de antemano, tales como Bonos y Pólizas. Ideal para perfiles conservadores.</p>
             </div>
 
-            <div class="info-block">
+            <div class="bento-sidebar-card card-fondos-mutuos">
                 <h3>Fondos Mutuos</h3>
-                <p>Aportes colectivos de capital administrados por profesionales con el fin de diversificar el portafolio en múltiples activos y optimizar el rendimiento.</p>
+                <p>Aportes colectivos administrados por profesionales para diversificar activos y optimizar el rendimiento global.</p>
             </div>
 
-            <div class="info-block">
+            <div class="bento-sidebar-card card-regla-oro">
                 <h3>Regla de Oro</h3>
-                <p>Evite invertir capital comprometido para gastos corrientes mensuales o destinado a constituir su fondo de emergencia.</p>
+                <p>Evite invertir capital comprometido para gastos de corto plazo o destinado a su fondo de emergencia.</p>
             </div>
         </div>
 
-        <!-- Contenido principal -->
-        <div class="main-content">
+        <!-- Panel de chat principal -->
+        <div class="chat-bento-card">
             
             <!-- Pantalla de Login -->
             <div id="login-section" class="screen active">
                 <h2>Inicio de Sesión</h2>
-                <p>Ingrese su correo electrónico institucional o personal para iniciar la conversación con el asistente virtual.</p>
+                <p>Ingrese su dirección de correo electrónico institucional o personal para iniciar la conversación con nuestro asesor comercial virtual.</p>
                 <input type="email" id="user-email" placeholder="correo@ejemplo.com"><br><br>
-                <button class="btn" onclick="loginUser()">Iniciar Conversación</button>
+                <button class="btn-pill" onclick="loginUser()">Iniciar Conversación</button>
             </div>
 
             <!-- Pantalla de Chat -->
@@ -398,7 +440,7 @@
                 
                 <div class="chat-input-area">
                     <input type="text" id="chat-input" placeholder="Escriba su consulta aquí...">
-                    <button class="btn" id="send-btn" onclick="sendMessage()">Enviar</button>
+                    <button class="btn-pill" id="send-btn" onclick="sendMessage()">Enviar</button>
                 </div>
 
                 <!-- Banner de Calificación de Lead -->

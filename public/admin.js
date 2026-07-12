@@ -274,17 +274,17 @@ function crearTarjetaLead(lead) {
     leftGroup.style.gap = '8px';
 
     const btnAprobar = document.createElement('button');
-    btnAprobar.className = 'btn btn-success';
+    btnAprobar.className = 'btn-action btn-approve';
     btnAprobar.textContent = 'Aprobar Propuesta';
     btnAprobar.addEventListener('click', () => takeAction(lead.id, 'APROBADO', textarea.value));
 
     const btnEditar = document.createElement('button');
-    btnEditar.className = 'btn btn-warning';
+    btnEditar.className = 'btn-action btn-edit';
     btnEditar.textContent = 'Guardar Edición';
     btnEditar.addEventListener('click', () => takeAction(lead.id, 'EDITADO', textarea.value));
 
     const btnRechazar = document.createElement('button');
-    btnRechazar.className = 'btn btn-danger';
+    btnRechazar.className = 'btn-action btn-reject';
     btnRechazar.textContent = 'Rechazar';
     btnRechazar.addEventListener('click', () => takeAction(lead.id, 'RECHAZADO', textarea.value));
 
@@ -294,7 +294,7 @@ function crearTarjetaLead(lead) {
 
     const rightGroup = document.createElement('div');
     const btnEliminar = document.createElement('button');
-    btnEliminar.className = 'btn btn-delete';
+    btnEliminar.className = 'btn-action btn-delete';
     btnEliminar.textContent = 'Eliminar Registro';
     btnEliminar.addEventListener('click', () => deleteLead(lead.id));
     rightGroup.appendChild(btnEliminar);

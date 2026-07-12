@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Synapse - Asesoría Financiera & CRM</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
@@ -19,9 +19,84 @@
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
+            overflow-x: hidden;
         }
 
-        /* Enrutador SPA (Visibilidad de Vistas) */
+        /* ── Splash Screen (Pantalla de Carga) ── */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: #020617;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        .splash-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Vector Synapse Glowing Pulse */
+        .synapse-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid #c5f82a;
+            box-shadow: 0 0 20px rgba(197, 248, 42, 0.4);
+            animation: pulseCircle 2s infinite ease-in-out;
+        }
+
+        .synapse-core {
+            width: 32px;
+            height: 32px;
+            background: #38bdf8;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+            z-index: 2;
+        }
+
+        @keyframes pulseCircle {
+            0% { transform: scale(0.9); opacity: 0.5; }
+            50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 30px rgba(197, 248, 42, 0.6); }
+            100% { transform: scale(0.9); opacity: 0.5; }
+        }
+
+        .splash-brand {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #ffffff;
+            margin-bottom: 32px;
+        }
+
+        .progress-container {
+            width: 200px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: #c5f82a;
+            border-radius: 2px;
+            transition: width 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Enrutador SPA */
         .spa-view {
             display: none;
             width: 100%;
@@ -50,9 +125,7 @@
             cursor: pointer;
         }
 
-        .back-link:hover {
-            color: #ffffff;
-        }
+        .back-link:hover { color: #ffffff; }
 
         /* Botón píldora */
         .btn-pill {
@@ -126,11 +199,8 @@
             transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .bento-card:hover {
-            transform: translateY(-4px);
-        }
+        .bento-card:hover { transform: translateY(-4px); }
 
-        /* Tarjeta de Crédito / Aurora Card */
         .bento-header {
             grid-column: span 2;
             background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
@@ -162,10 +232,7 @@
             z-index: 1;
         }
 
-        .bento-header-content {
-            position: relative;
-            z-index: 2;
-        }
+        .bento-header-content { position: relative; z-index: 2; }
 
         .bento-header .subtitle {
             font-size: 11px;
@@ -191,15 +258,8 @@
             margin: 0;
         }
 
-        .bento-client {
-            background: #c2f2e9; /* Menta */
-            color: #000000;
-        }
-
-        .bento-admin {
-            background: #ffd3e8; /* Rosa Pastel */
-            color: #000000;
-        }
+        .bento-client { background: #c2f2e9; color: #000000; }
+        .bento-admin { background: #ffd3e8; color: #000000; }
 
         .card-title-area h2 {
             font-size: 24px;
@@ -222,9 +282,7 @@
             margin-top: 24px;
         }
 
-        .bento-card .btn-pill:hover {
-            background: #1e293b;
-        }
+        .bento-card .btn-pill:hover { background: #1e293b; }
 
 
         /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -281,20 +339,9 @@
             letter-spacing: -0.02em;
         }
 
-        .card-renta-fija {
-            background: #c5f82a; /* Verde Neón */
-            color: #000000;
-        }
-
-        .card-fondos-mutuos {
-            background: #c2f2e9; /* Menta */
-            color: #000000;
-        }
-
-        .card-regla-oro {
-            background: #ffd3e8; /* Rosa */
-            color: #000000;
-        }
+        .card-renta-fija { background: #c5f82a; color: #000000; }
+        .card-fondos-mutuos { background: #c2f2e9; color: #000000; }
+        .card-regla-oro { background: #ffd3e8; color: #000000; }
 
         .bento-sidebar-card h3 {
             font-size: 15px;
@@ -350,6 +397,28 @@
             line-height: 1.5;
         }
 
+        input[type="email"], input[type="text"] {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 9999px;
+            font-size: 15px;
+            font-family: inherit;
+            width: 320px;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        input[type="email"]:focus, input[type="text"]:focus {
+            border-color: #c5f82a;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        input:disabled { opacity: 0.5; cursor: not-allowed; }
+
         #chat-section {
             display: none;
             flex-direction: column;
@@ -370,10 +439,7 @@
             color: #94a3b8;
         }
 
-        .chat-header span {
-            color: #ffffff;
-            font-weight: 600;
-        }
+        .chat-header span { color: #ffffff; font-weight: 600; }
 
         #chat-box {
             flex: 1;
@@ -444,15 +510,8 @@
             40% { transform: scale(1.0); }
         }
 
-        .chat-input-area {
-            display: flex;
-            gap: 12px;
-        }
-
-        .chat-input-area input {
-            flex: 1;
-            text-align: left;
-        }
+        .chat-input-area { display: flex; gap: 12px; }
+        .chat-input-area input { flex: 1; text-align: left; }
 
         #finish-container {
             display: none;
@@ -465,13 +524,7 @@
             animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        #finish-container p {
-            margin: 0;
-            font-size: 14px;
-            color: #cbd5e1;
-            line-height: 1.5;
-        }
-
+        #finish-container p { margin: 0; font-size: 14px; color: #cbd5e1; line-height: 1.5; }
         #finish-container p.title {
             font-weight: 700;
             font-size: 16px;
@@ -553,9 +606,7 @@
             letter-spacing: 0.05em;
         }
 
-        #admin-dashboard-section {
-            display: none;
-        }
+        #admin-dashboard-section { display: none; }
 
         .dashboard-header {
             display: flex;
@@ -573,61 +624,318 @@
             letter-spacing: -0.03em;
         }
 
-        .header-actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
+        .header-actions { display: flex; gap: 12px; align-items: center; }
+        .user-welcome { font-size: 14px; color: #94a3b8; margin-right: 12px; }
+        .user-welcome span { color: #ffffff; font-weight: 600; }
 
-        .user-welcome {
-            font-size: 14px;
-            color: #94a3b8;
-            margin-right: 12px;
-        }
-
-        .user-welcome span {
-            color: #ffffff;
-            font-weight: 600;
-        }
-
-        .analytics-grid {
+        /* ── Estilos Desktop CRM (Bento original) ── */
+        .desktop-kpis {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 16px;
             margin-bottom: 32px;
         }
 
-        .widget-card {
+        /* ── Vista Especial Teléfono (Estilo Imagen Referencia) ── */
+        .mobile-crm-view {
+            display: none;
+            background: #090d16;
+            padding: 0 4px;
+            box-sizing: border-box;
+        }
+
+        /* Tarjeta VISA Estilizada */
+        .visa-card {
+            background: #18191d;
+            border-radius: 24px;
+            padding: 28px 24px;
+            box-sizing: border-box;
+            position: relative;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .visa-card .visa-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .visa-card .brand-name {
+            font-size: 18px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.02em;
+        }
+
+        .visa-card .card-type {
+            font-size: 12px;
+            color: #71717a;
+            margin-top: 2px;
+        }
+
+        .visa-card .balance-block {
+            text-align: right;
+        }
+
+        .visa-card .balance-label {
+            font-size: 11px;
+            color: #71717a;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .visa-card .balance-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 4px;
+            letter-spacing: -0.02em;
+        }
+
+        .visa-card .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 28px;
+        }
+
+        .visa-card .card-number {
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.1em;
+            color: #ffffff;
+        }
+
+        .visa-card .card-info-lbl {
+            font-size: 11px;
+            color: #71717a;
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+
+        .visa-card .card-info-val {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        /* Split Selectors Row */
+        .mobile-selectors-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .mobile-selectors-row select {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 4px 16px 4px 0;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .toggle-month-year {
+            display: flex;
+            background: #18191d;
+            border-radius: 9999px;
+            padding: 4px;
+        }
+
+        .toggle-btn {
+            background: transparent;
+            color: #71717a;
+            border: none;
+            padding: 6px 16px;
+            font-size: 13.5px;
+            font-weight: 600;
+            border-radius: 9999px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: #ffffff;
+            color: #000000;
+        }
+
+        /* Dual Charts Row */
+        .mobile-charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .chart-container-card {
+            background: #18191d;
             border-radius: 20px;
-            padding: 28px;
+            padding: 20px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            min-height: 150px;
+            align-items: center;
         }
 
-        .widget-card .title {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            opacity: 0.75;
+        .chart-title-mobile {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e4e4e7;
+            margin-bottom: 16px;
+            align-self: flex-start;
         }
 
-        .widget-card .value {
-            font-size: 48px;
+        /* SVG Donut Chart */
+        .donut-wrapper {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .donut-svg {
+            transform: rotate(-90deg);
+        }
+
+        .donut-bg {
+            fill: none;
+            stroke: #27272a;
+            stroke-width: 8;
+        }
+
+        .donut-segment {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.5s ease;
+        }
+
+        .donut-segment-1 { stroke: #38bdf8; } /* B2B */
+        .donut-segment-2 { stroke: #ffd3e8; } /* B2C */
+
+        .donut-center-text {
+            position: absolute;
+            font-size: 18px;
             font-weight: 700;
-            letter-spacing: -0.04em;
-            line-height: 1;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+        }
+
+        /* SVG Pie Chart */
+        .pie-wrapper {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Legends List */
+        .chart-legend-list {
             margin-top: 16px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
-        .widget-total { background: #c5f82a; color: #000000; }
-        .widget-b2b { background: #c2f2e9; color: #000000; }
-        .widget-b2c { background: #ffd3e8; color: #000000; }
-        .widget-priority { background: #38bdf8; color: #000000; }
+        .legend-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #a1a1aa;
+        }
 
+        .legend-color-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .legend-item span.value {
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        /* Wave Trend Graph */
+        .trend-container-card {
+            background: #18191d;
+            border-radius: 20px;
+            padding: 24px;
+            box-sizing: border-box;
+            margin-bottom: 80px; /* Espacio para el Bottom Tab Bar */
+        }
+
+        .trend-header-mobile {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .trend-header-mobile select {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
+            padding: 0;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .trend-badge-mobile {
+            background: #c5f82a;
+            color: #000000;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 6px 14px;
+            border-radius: 9999px;
+        }
+
+        .trend-badge-mobile span {
+            font-weight: 800;
+            margin-left: 4px;
+        }
+
+        .trend-chart-svg {
+            width: 100%;
+            height: 80px;
+        }
+
+        .trend-axis-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding: 0 4px;
+        }
+
+        .trend-axis-labels span {
+            font-size: 10px;
+            color: #71717a;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .trend-axis-labels span.active {
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        /* CRM Leads Area */
         .filter-bar {
             background: rgba(15, 23, 42, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.06);
@@ -821,8 +1129,77 @@
             color: #f87171;
         }
 
-        /* Responsive */
-        @media (max-width: 800px) {
+
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           4. BOTTOM NAV TAB BAR (#mobile-nav)
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        #mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 68px;
+            background: rgba(24, 25, 29, 0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            z-index: 5000;
+            justify-content: space-around;
+            align-items: center;
+            box-sizing: border-box;
+            padding-bottom: 4px;
+        }
+
+        .nav-tab-btn {
+            background: transparent;
+            border: none;
+            color: #71717a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            width: 50px;
+            height: 50px;
+            transition: color 0.2s;
+        }
+
+        .nav-tab-btn.active {
+            color: #c5f82a; /* Activado en Verde Neón */
+        }
+
+        .nav-tab-btn svg {
+            width: 22px;
+            height: 22px;
+        }
+
+
+        /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+           5. RESPONSIVE / VISTA MÓVIL
+           ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+        @media (max-width: 600px) {
+            body {
+                align-items: flex-start;
+                padding-bottom: 80px; /* Margen para nav bar */
+            }
+
+            .container, .client-container, .admin-container {
+                width: 100%;
+                padding: 24px 16px;
+            }
+
+            .back-link {
+                display: none; /* Se navega mediante el bottom bar */
+            }
+
+            /* Home View */
+            .bento-grid {
+                grid-template-columns: 1fr;
+            }
+            .bento-header {
+                grid-column: span 1;
+            }
+
+            /* Client View */
             .bento-client-layout {
                 grid-template-columns: 1fr;
                 height: auto;
@@ -830,14 +1207,41 @@
             .sidebar-stack {
                 flex-direction: row;
                 overflow-x: auto;
+                padding-bottom: 8px;
             }
             .bento-sidebar-card {
                 min-width: 260px;
+            }
+
+            /* Admin View */
+            .desktop-kpis {
+                display: none; /* Ocultar KPIs bento en móvil */
+            }
+            .mobile-crm-view {
+                display: block; /* Mostrar VISA y Gráficos estilo app nativa */
+            }
+
+            /* Bottom Nav Bar */
+            #mobile-nav {
+                display: flex;
             }
         }
     </style>
 </head>
 <body>
+
+    <!-- ── Splash Screen (Pantalla de Carga) ── -->
+    <div id="splash-screen">
+        <div class="splash-logo">
+            <div class="synapse-circle"></div>
+            <div class="synapse-core"></div>
+        </div>
+        <div class="splash-brand">Synapse</div>
+        <div class="progress-container">
+            <div class="progress-bar" id="splash-progress-bar"></div>
+        </div>
+    </div>
+
 
     <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        VISTA 1: PORTAL INICIO (#home-view)
@@ -848,7 +1252,7 @@
                 <div class="bento-card bento-header">
                     <div class="bento-header-content">
                         <div class="subtitle">Synapse</div>
-                        <h1>IA Asesoría Financiera & Gestión CRM</h1>
+                        <h1>IA Asesoría Financiera & CRM</h1>
                         <p>Plataforma comercial unificada de calificación autónoma y bandeja de entrada analítica.</p>
                     </div>
                 </div>
@@ -983,8 +1387,8 @@
                     </div>
                 </div>
 
-                <!-- Analíticas Bento Grid -->
-                <div class="analytics-grid">
+                <!-- 1. KPIs Desktop (Se ocultan en móvil) -->
+                <div class="desktop-kpis">
                     <div class="widget-card widget-total">
                         <div class="title">Total Prospectos</div>
                         <div class="value" id="kpi-total">0</div>
@@ -1000,6 +1404,126 @@
                     <div class="widget-card widget-priority">
                         <div class="title">Promedio Prioridad</div>
                         <div class="value" id="kpi-priority">0.0</div>
+                    </div>
+                </div>
+
+                <!-- 2. KPIs Móviles (Vista Estilo Aplicación Nativa) -->
+                <div class="mobile-crm-view">
+                    <!-- Tarjeta VISA -->
+                    <div class="visa-card">
+                        <div class="visa-header">
+                            <div>
+                                <div class="brand-name">VISA</div>
+                                <div class="card-type">Debit Card</div>
+                            </div>
+                            <div class="balance-block">
+                                <div class="balance-label">Volumen Estimado</div>
+                                <div class="balance-value" id="mobile-kpi-total-monto">$ 24,281.12</div>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="card-number">.... 5419</div>
+                            <div>
+                                <div class="card-info-lbl">Vencimiento</div>
+                                <div class="card-info-val">07 / 23</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selectores -->
+                    <div class="mobile-selectors-row">
+                        <select id="mobile-filter-lead-type">
+                            <option value="Expenses">Prospectos</option>
+                        </select>
+                        <div class="toggle-month-year">
+                            <button class="toggle-btn active">Mes</button>
+                            <button class="toggle-btn">Año</button>
+                        </div>
+                    </div>
+
+                    <!-- Gráficos Circulares SVG -->
+                    <div class="mobile-charts-row">
+                        <!-- Donut Chart B2B vs B2C -->
+                        <div class="chart-container-card">
+                            <div class="chart-title-mobile">Distribución B2B/B2C</div>
+                            <div class="donut-wrapper">
+                                <svg class="donut-svg" width="100" height="100">
+                                    <circle class="donut-bg" cx="50" cy="50" r="40"></circle>
+                                    <circle class="donut-segment donut-segment-1" id="donut-segment-b2b" cx="50" cy="50" r="40" stroke-dasharray="0 251" stroke-dashoffset="0"></circle>
+                                    <circle class="donut-segment donut-segment-2" id="donut-segment-b2c" cx="50" cy="50" r="40" stroke-dasharray="0 251" stroke-dashoffset="0"></circle>
+                                </svg>
+                                <div class="donut-center-text" id="donut-percentage">0%</div>
+                            </div>
+                            <div class="chart-legend-list">
+                                <div class="legend-item">
+                                    <div class="legend-color-label">
+                                        <div class="legend-dot" style="background:#38bdf8;"></div>
+                                        <span>B2B (Corp.)</span>
+                                    </div>
+                                    <span class="value" id="legend-val-b2b">0%</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color-label">
+                                        <div class="legend-dot" style="background:#ffd3e8;"></div>
+                                        <span>B2C (Pers.)</span>
+                                    </div>
+                                    <span class="value" id="legend-val-b2c">0%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pie Chart Estados -->
+                        <div class="chart-container-card">
+                            <div class="chart-title-mobile">Estados de Leads</div>
+                            <div class="pie-wrapper">
+                                <!-- Pie Chart SVG Segmentado -->
+                                <svg width="100" height="100" viewBox="0 0 32 32" style="transform: rotate(-90deg); border-radius: 50%;">
+                                    <circle r="16" cx="16" cy="16" fill="#c5f82a" /> <!-- Aprobados (Verde) -->
+                                    <circle id="pie-segment-pending" r="16" cx="16" cy="16" fill="#ffd3e8" stroke-dasharray="0 100" /> <!-- Pendientes (Rosa) -->
+                                    <circle id="pie-segment-rejected" r="16" cx="16" cy="16" fill="#fb923c" stroke-dasharray="0 100" /> <!-- Rechazados (Naranja) -->
+                                </svg>
+                            </div>
+                            <div class="chart-legend-list">
+                                <div class="legend-item">
+                                    <div class="legend-color-label">
+                                        <div class="legend-dot" style="background:#c5f82a;"></div>
+                                        <span>Aprobados</span>
+                                    </div>
+                                    <span class="value" id="legend-val-app">0%</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color-label">
+                                        <div class="legend-dot" style="background:#ffd3e8;"></div>
+                                        <span>Pendientes</span>
+                                    </div>
+                                    <span class="value" id="legend-val-pen">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gráfico de Tendencia SVG Wave -->
+                    <div class="trend-container-card">
+                        <div class="trend-header-mobile">
+                            <select>
+                                <option>Prospectos Recibidos</option>
+                            </select>
+                            <div class="trend-badge-mobile">Nov <span id="trend-val-leads">0</span></div>
+                        </div>
+                        <!-- SVG Neon wave line -->
+                        <svg class="trend-chart-svg" viewBox="0 0 300 80" preserveAspectRatio="none">
+                            <path d="M 0 60 C 40 55, 60 62, 100 58 C 140 54, 160 70, 200 68 C 240 66, 260 65, 300 30" fill="none" stroke="#c5f82a" stroke-width="3" stroke-linecap="round"></path>
+                        </svg>
+                        <div class="trend-axis-labels">
+                            <span>Abr</span>
+                            <span>May</span>
+                            <span>Jun</span>
+                            <span>Jul</span>
+                            <span>Ago</span>
+                            <span>Sep</span>
+                            <span>Oct</span>
+                            <span class="active">Nov</span>
+                        </div>
                     </div>
                 </div>
 
@@ -1031,21 +1555,68 @@
 
 
     <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+       4. BOTTOM NAVIGATION TAB BAR (Mobile persistente)
+       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <div id="mobile-nav">
+        <button class="nav-tab-btn active" id="tab-home" onclick="navigateTo('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+        </button>
+        <button class="nav-tab-btn" id="tab-client" onclick="navigateTo('client')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+        </button>
+        <button class="nav-tab-btn" id="tab-admin" onclick="navigateTo('admin')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="2" y1="10" x2="22" y2="10"></line>
+            </svg>
+        </button>
+    </div>
+
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        LÓGICA JAVASCRIPT DE LA SPA
        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
     <script>
-        // ── 0. ENRUTADOR CLIENT-SIDE (Navegación) ──
+        // ── 0. SPLASH SCREEN (Animación de Carga) ──
+        window.addEventListener('DOMContentLoaded', () => {
+            const progressBar = document.getElementById('splash-progress-bar');
+            setTimeout(() => {
+                if (progressBar) progressBar.style.width = '100%';
+            }, 50);
+
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    splash.style.visibility = 'hidden';
+                }
+            }, 1500);
+        });
+
+        // ── 1. ENRUTADOR CLIENT-SIDE (Navegación) ──
         function navigateTo(viewName) {
-            // Ocultar todas las vistas
             document.querySelectorAll('.spa-view').forEach(view => {
                 view.classList.remove('active');
             });
 
+            // Actualizar botones de barra inferior
+            document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
             if (viewName === 'home') {
                 document.getElementById('home-view').classList.add('active');
+                document.getElementById('tab-home').classList.add('active');
             } else if (viewName === 'client') {
                 document.getElementById('client-view').classList.add('active');
-                // Si ya estaba logueado el cliente, enfocar input, si no, login
+                document.getElementById('tab-client').classList.add('active');
                 if (currentEmail) {
                     document.getElementById('chat-input').focus();
                 } else {
@@ -1053,7 +1624,7 @@
                 }
             } else if (viewName === 'admin') {
                 document.getElementById('admin-view').classList.add('active');
-                // Verificar si hay token activo
+                document.getElementById('tab-admin').classList.add('active');
                 if (obtenerToken()) {
                     mostrarDashboard();
                 } else {
@@ -1064,7 +1635,7 @@
 
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // LÓGICA DEL PORTAL DEL CLIENTE (Antes usuario.js)
+        // LÓGICA DEL PORTAL DEL CLIENTE
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         let currentEmail = "";
         let currentInteractionId = null;
@@ -1175,7 +1746,6 @@
                 const data = await res.json();
                 if (data.success) {
                     alert("El perfil ha sido registrado en el CRM con éxito.");
-                    // Reiniciar vista cliente
                     currentEmail = "";
                     currentInteractionId = null;
                     chatHistoryBackup = [];
@@ -1205,7 +1775,7 @@
 
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // LÓGICA DEL PORTAL DEL ADMINISTRADOR (Antes admin.js)
+        // LÓGICA DEL PORTAL DEL ADMINISTRADOR
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         function obtenerToken() {
             return sessionStorage.getItem('crm_token');
@@ -1316,17 +1886,68 @@
         }
 
         function updateKPIs(leads) {
+            // KPIs de Escritorio
             document.getElementById('kpi-total').textContent = leads.length;
             const b2b = leads.filter(l => l.tipo_cliente === 'B2B').length;
             document.getElementById('kpi-b2b').textContent = b2b;
             const b2c = leads.filter(l => l.tipo_cliente === 'B2C').length;
             document.getElementById('kpi-b2c').textContent = b2c;
             
-            if (leads.length === 0) {
-                document.getElementById('kpi-priority').textContent = "0.0";
-            } else {
-                const avg = leads.reduce((sum, l) => sum + (l.puntaje_prioridad || 5), 0) / leads.length;
-                document.getElementById('kpi-priority').textContent = avg.toFixed(1);
+            let avgPri = 0;
+            if (leads.length > 0) {
+                avgPri = leads.reduce((sum, l) => sum + (l.puntaje_prioridad || 5), 0) / leads.length;
+            }
+            document.getElementById('kpi-priority').textContent = avgPri.toFixed(1);
+
+            // KPIs Móviles Estilo VISA & Gráficos SVG
+            const totalMonto = leads.length * 1000 + 4281.12; // volumen estimado dinámico
+            document.getElementById('mobile-kpi-total-monto').textContent = `$ ${totalMonto.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('trend-val-leads').textContent = leads.length;
+
+            // Porcentajes B2B y B2C
+            const pctB2B = leads.length ? Math.round((b2b / leads.length) * 100) : 0;
+            const pctB2C = leads.length ? Math.round((b2c / leads.length) * 100) : 0;
+
+            document.getElementById('donut-percentage').textContent = `${pctB2B}%`;
+            document.getElementById('legend-val-b2b').textContent = `${pctB2B}%`;
+            document.getElementById('legend-val-b2c').textContent = `${pctB2C}%`;
+
+            // SVG Donut Render
+            const cB2B = document.getElementById('donut-segment-b2b');
+            const cB2C = document.getElementById('donut-segment-b2c');
+
+            if (cB2B && cB2C) {
+                const circ = 2 * Math.PI * 40; // ~251.3
+                const strokeB2B = (pctB2B / 100) * circ;
+                const strokeB2C = (pctB2C / 100) * circ;
+
+                cB2B.setAttribute('stroke-dasharray', `${strokeB2B} ${circ}`);
+                cB2C.setAttribute('stroke-dasharray', `${strokeB2C} ${circ}`);
+                cB2C.setAttribute('stroke-dashoffset', `-${strokeB2B}`);
+            }
+
+            // Gráfico de Pastel Estados (Aprobados vs Pendientes vs Rechazados)
+            const aprobados = leads.filter(l => (l.estado_aprobacion || '').includes('APROBADO')).length;
+            const pendientes = leads.filter(l => !(l.estado_aprobacion || '').includes('APROBADO') && !(l.estado_aprobacion || '').includes('RECHAZADO')).length;
+            const rechazados = leads.filter(l => (l.estado_aprobacion || '').includes('RECHAZADO')).length;
+
+            const pctApp = leads.length ? Math.round((aprobados / leads.length) * 100) : 0;
+            const pctPen = leads.length ? Math.round((pendientes / leads.length) * 100) : 0;
+            const pctRej = leads.length ? Math.round((rechazados / leads.length) * 100) : 0;
+
+            document.getElementById('legend-val-app').textContent = `${pctApp}%`;
+            document.getElementById('legend-val-pen').textContent = `${pctPen}%`;
+
+            // SVG Pie Render
+            const cPen = document.getElementById('pie-segment-pending');
+            const cRej = document.getElementById('pie-segment-rejected');
+
+            if (cPen && cRej) {
+                cPen.setAttribute('stroke-dasharray', `${pctPen} 100`);
+                cPen.setAttribute('stroke-dashoffset', `-${pctApp}`);
+
+                cRej.setAttribute('stroke-dasharray', `${pctRej} 100`);
+                cRej.setAttribute('stroke-dashoffset', `-${pctApp + pctPen}`);
             }
         }
 

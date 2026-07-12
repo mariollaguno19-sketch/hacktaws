@@ -38,7 +38,7 @@ El sistema sigue una arquitectura desacoplada con separación clara de lógica, 
 |         v                                                     v         |
 |  +------------------------------+     +------------------------------+  |
 |  |     Módulo Conversacional    |     |  Módulo de Calificación CRM  |  |
-|  |   y Tutor Futuro Academy     |     |    (JSON Structured Output)  |  |
+|  |        y Tutor Synapse        |     |    (JSON Structured Output)  |  |
 |  +--------------+---------------+     +---------------+--------------+  |
 +-----------------|-------------------------------------|-----------------+
                   |                                     |
@@ -47,7 +47,7 @@ El sistema sigue una arquitectura desacoplada con separación clara de lógica, 
 |                  CEREBRO IA & ALMACENAMIENTO DE DATOS                   |
 |   +-------------------------------+   +-----------------------------+   |
 |   |     Google Gemini 3.5 Flash   |   |     Base de Datos CRM       |   |
-|   |    (API de Interactions)      |   |   (crm_datos.json Simulado) |   |
+|   |    (API de Interactions)      |   |   (Supabase / Simulado)     |   |
 +-----------------------------------+---------------------------------+---+
 ```[cite: 1, 2]
 
@@ -62,7 +62,7 @@ Este producto está diseñado para ser de fácil adopción en arquitecturas banc
 ---
 
 ## 🛡️ 4. Mitigación de Riesgos y Antialucinación
-* **Grounding Estricto:** El Tutor IA cuenta con un *System Instruction* que le prohibe terminantemente inventar tasas, legales o datos fuera de la base de conocimiento de **Futuro Academy**[cite: 1, 2].
+* **Grounding Estricto:** El Tutor IA cuenta con un *System Instruction* que le prohibe terminantemente inventar tasas, legales o datos fuera de la base de conocimiento de **Synapse**[cite: 1, 2].
 * **Estilo Conversacional Limpio:** La IA referencia la academia de forma natural en su discurso sin exponer etiquetas técnicas ni corchetes al cliente[cite: 1].
 * **Protección de Datos:** El sistema solicita el consentimiento explícito del cliente antes de perfilar su información financiera[cite: 1].
 

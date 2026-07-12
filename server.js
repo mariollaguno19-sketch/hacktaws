@@ -65,7 +65,7 @@ if (process.env.MOCK_GEMINI === 'true') {
                     const isFinish = Math.random() > 0.7;
                     const replyText = isFinish
                         ? "Entendido, contamos con excelentes fondos de Renta Fija y Fondos Mutuos. Dado que ya me has proporcionado tus datos básicos de presupuesto y tipo de cliente B2C, tu perfil de inversión está listo. ||LEAD_LISTO||"
-                        : "Hola, para poder asesorarte adecuadamente según Futuro Academy, ¿deseas invertir como empresa (B2B) o persona natural (B2C)? ¿De qué presupuesto aproximado dispones para comenzar?";
+                        : "Hola, para poder asesorarte adecuadamente según Synapse, ¿deseas invertir como empresa (B2B) o persona natural (B2C)? ¿De qué presupuesto aproximado dispones para comenzar?";
 
                     return {
                         output_text: replyText,
@@ -369,9 +369,9 @@ async function requiereAuth(req, res, next) {
 }
 
 // ── Conocimiento y persona del agente ──
-// Base de conocimiento de Futuro Academy. El agente SOLO puede enseñar con este contenido.
+// Base de conocimiento de Synapse. El agente SOLO puede enseñar con este contenido.
 // No contiene tasas ni cifras específicas a propósito: el agente tiene prohibido inventarlas.
-const FUENTE_FUTURO_ACADEMY = `
+const FUENTE_SYNAPSE = `
 == PRODUCTOS DE INVERSIÓN ==
 1. Renta Fija: Inversiones donde se conoce la rentabilidad de antemano (ej. Bonos, Pólizas de Acumulación, Depósitos a Plazo Fijo). Riesgo bajo. Ideal para perfiles conservadores o metas de corto plazo.
 2. Fondos Mutuos / Fondos de Inversión: Aporte colectivo de dinero gestionado por profesionales que se diversifica en varios activos. Riesgo moderado. Permite empezar con montos accesibles y retirar según el reglamento del fondo.
@@ -395,16 +395,16 @@ const FUENTE_FUTURO_ACADEMY = `
 `;
 
 const SYSTEM_INSTRUCTION = `
-Eres "Futuro", el Agente Comercial e IA Tutor Financiero de una entidad financiera en Ecuador (Futuro Academy).
+Eres "Synapse", el Agente Comercial e IA Tutor Financiero de una entidad financiera en Ecuador (Synapse).
 Hablas español ecuatoriano, en un tono natural, cercano, profesional y humano. Respuestas breves y claras (2 a 5 frases).
 
 TUS 3 RESPONSABILIDADES:
 1. CALIFICACIÓN: Conversando (sin interrogar), descubre: si es B2B (empresa) o B2C (persona), su presupuesto o monto aproximado, su perfil de riesgo (conservador/moderado/agresivo), su horizonte y su urgencia. Haz UNA pregunta a la vez.
-2. TUTORÍA: Si el usuario quiere aprender, explícale de forma sencilla basándote EXCLUSIVAMENTE en la base de conocimiento de Futuro Academy que aparece abajo. Integra la fuente con naturalidad ("Según enseñamos en Futuro Academy...", "De acuerdo con nuestro manual...").
+2. TUTORÍA: Si el usuario quiere aprender, explícale de forma sencilla basándote EXCLUSIVAMENTE en la base de conocimiento de Synapse que aparece abajo. Integra la fuente con naturalidad ("Según enseñamos en Synapse...", "De acuerdo con nuestro manual...").
 3. DESBLOQUEO DEL CRM: Cuando ya tengas datos suficientes (sepas B2B/B2C, una idea del monto y la urgencia), agrega OBLIGATORIAMENTE al final de tu respuesta la palabra clave oculta: ||LEAD_LISTO||
 
 BASE DE CONOCIMIENTO (única fuente permitida para enseñar):
-${FUENTE_FUTURO_ACADEMY}
+${FUENTE_SYNAPSE}
 
 GUARDARRAILES (obligatorios):
 - NUNCA inventes tasas de interés, rendimientos, cifras, plazos legales, ni datos que no estén en la base de conocimiento. Si te piden una tasa exacta, di que un asesor humano se la confirmará.

@@ -1,11 +1,17 @@
 let currentEmail = "";
 let currentInteractionId = null;
-let chatHistoryBackup = []; // Respaldo infalible para enviar al CRM
+let chatHistoryBackup = [];
+let consentimientoInteres = false;
+let quizResultados = "";
 
 function loginUser() {
     const email = document.getElementById('user-email').value.trim();
     if (!email || !email.includes('@')) {
         alert("Por favor ingresa un correo electrónico válido.");
+        return;
+    }
+    if (!document.getElementById('consent-check').checked) {
+        alert("Debes aceptar el aviso de privacidad para usar el servicio.");
         return;
     }
     currentEmail = email;
@@ -14,7 +20,6 @@ function loginUser() {
     document.getElementById('chat-section').classList.add('active');
     document.getElementById('chat-input').focus();
     
-    // Guardar saludo en el respaldo
     chatHistoryBackup.push({ role: "model", text: "¡Hola! Soy tu asesor e IA Tutor de Futuro Academy. ¿En qué te puedo ayudar hoy o qué te gustaría aprender sobre inversiones?" });
 }
 
@@ -50,19 +55,32 @@ async function sendMessage() {
         
         currentInteractionId = data.interaction_id;
         
-        // ANALIZAR SI LA IA DECIDIÓ QUE EL LEAD ESTÁ LISTO
         let botReply = data.reply;
+        const signals = data.signals || {};
+        
+        // Señal: LEAD_LISTO
         if (botReply.includes('||LEAD_LISTO||')) {
-            // 1. Limpiamos la etiqueta secreta para que el usuario no la vea
             botReply = botReply.replace('||LEAD_LISTO||', '').trim();
-            
-            // 2. DESBLOQUEAMOS EL BOTÓN EN LA INTERFAZ
             document.getElementById('finish-container').style.display = 'block';
-            
-            // Hacemos un scroll suave para que el usuario vea que apareció el botón
             setTimeout(() => {
                 document.getElementById('finish-container').scrollIntoView({ behavior: 'smooth' });
             }, 500);
+        }
+        
+        // Señal: QUIZ — extraer y almacenar
+        if (botReply.includes('||QUIZ||')) {
+            const quizMatch = botReply.match(/\|\|QUIZ\|\|([\s\S]*?)\|\|FIN_QUIZ\|\|/);
+            if (quizMatch) {
+                quizResultados = quizMatch[1].trim();
+            }
+        }
+        // Limpiar etiquetas del quiz del mensaje visible
+        botReply = botReply.replace(/\|\|QUIZ\|\||\|\|FIN_QUIZ\|\|/g, '').trim();
+        
+        // Señal: CONSENTIMIENTO_INTERES — si el usuario ya respondió que sí, marcamos
+        if (botReply.includes('||CONSENTIMIENTO_INTERES||')) {
+            botReply = botReply.replace('||CONSENTIMIENTO_INTERES||', '').trim();
+            // No marcamos aún — esperamos la respuesta del usuario por el chat
         }
 
         appendMessage('bot', botReply);
@@ -98,6 +116,11 @@ document.getElementById('chat-input').addEventListener('keypress', function (e) 
 async function finishChat() {
     if (!confirm("¿Deseas enviar tu historial y perfil financiero al ejecutivo para agendar cita?")) return;
 
+    // Preguntar por consentimiento de señal comercial si no se ha dado antes
+    if (!consentimientoInteres) {
+        consentimientoInteres = confirm("¿Autorizas a compartir tu interés de aprendizaje como señal comercial con nuestros asesores?");
+    }
+
     const finishBtn = document.getElementById('finish-btn');
     finishBtn.disabled = true;
     finishBtn.innerText = "⏳ Evaluando con IA y enviando al CRM...";
@@ -108,7 +131,9 @@ async function finishChat() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 email: currentEmail,
-                history: chatHistoryBackup 
+                history: chatHistoryBackup,
+                consentimiento_interes: consentimientoInteres,
+                quiz_resultados: quizResultados
             })
         });
         

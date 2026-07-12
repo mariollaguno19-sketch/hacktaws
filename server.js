@@ -21,16 +21,49 @@ const FUENTE_FUTURO_ACADEMY = `
 3. Regla de Oro: Nunca inviertas dinero que necesites para tu gasto corriente mensual o fondo de emergencia.
 `;
 
-const SYSTEM_INSTRUCTION = `
+const CONFIG_FILE = path.join(__dirname, 'config_preguntas.json');
+
+function getPreguntasConfigurables() {
+    try {
+        if (fs.existsSync(CONFIG_FILE)) {
+            const data = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+            if (data.preguntas && data.preguntas.length > 0) return data.preguntas;
+        }
+    } catch (e) {}
+    return [
+        "¿Es tu empresa o tú como persona quien quiere invertir?",
+        "¿Qué rango de inversión estás considerando?",
+        "¿Qué tan urgente es para ti recibir asesoría?"
+    ];
+}
+
+function getSystemInstruction() {
+    const preguntas = getPreguntasConfigurables();
+    const preguntasTexto = preguntas.map((p, i) => `  ${i + 1}. "${p}"`).join('\n');
+    return `
 Eres un Agente Comercial e IA Tutor Financiero para una entidad financiera en Ecuador.
-Tus 3 responsabilidades:
-1. CALIFICACIÓN: Identifica conversando si el usuario es B2B (empresa) o B2C (persona individual), su presupuesto aproximado, perfil de riesgo y urgencia.
+Tus 4 responsabilidades:
+1. CALIFICACIÓN: Identifica conversando si el usuario es B2B (empresa) o B2C (persona individual), su presupuesto aproximado, perfil de riesgo y urgencia. Usa estas preguntas configurables durante la conversación para calificar al prospecto:
+${preguntasTexto}
 2. TUTORÍA: Si el usuario quiere aprender, explícale de forma sencilla BASÁNDOTE EXCLUSIVAMENTE en esta base de conocimiento:
 ${FUENTE_FUTURO_ACADEMY}
-REGLA DE ESTILO: Habla de forma natural, cercana, profesional y humana. Cuando uses información de la academia, intégrala fluidamente en tu diálogo diciendo algo como "Según enseñamos en Futuro Academy..." o "De acuerdo con nuestro manual...". NUNCA uses corchetes, ni códigos ni etiquetas de fuentes.
-3. DESBLOQUEO DEL CRM: En cuanto sientas que ya tienes los datos suficientes del cliente (sepas si es B2B/B2C, tengas idea de su presupuesto y su urgencia), debes obligatoriamente agregar AL FINAL de tu respuesta la palabra clave oculta: ||LEAD_LISTO||
+   Además, después de explicar, ofrece una ruta breve de aprendizaje de 2 pasos y UN QUIZ de 3 preguntas de opción múltiple para evaluar su comprensión. El quiz debe estar al final de tu respuesta tutoría, en el siguiente formato:
+   ||QUIZ||
+   Pregunta 1: ...
+   a) ... b) ... c) ...
+   Pregunta 2: ...
+   a) ... b) ... c) ...
+   Pregunta 3: ...
+   a) ... b) ... c) ...
+   ||FIN_QUIZ||
+   Pregunta al usuario si quiere responder el quiz.
+3. SEÑAL COMERCIAL: Cuando identifiques el tema de interés del usuario (ej. renta fija, fondos mutuos, etc.), pregunta explícitamente si autoriza a compartir ese interés como señal comercial con el equipo de asesores. Si el usuario acepta, agrega al final de tu respuesta: ||CONSENTIMIENTO_INTERES||
+4. DESBLOQUEO DEL CRM: En cuanto sientas que ya tienes los datos suficientes del cliente (sepas si es B2B/B2C, tengas idea de su presupuesto y su urgencia), debes obligatoriamente agregar AL FINAL de tu respuesta la palabra clave oculta: ||LEAD_LISTO||
 No pongas ||LEAD_LISTO|| en el saludo inicial ni si aún te faltan datos clave. Solo ponlo al final del mensaje cuando consideres que el lead ya está calificado.
+
+REGLA DE ESTILO: Habla de forma natural, cercana, profesional y humana. Cuando uses información de la academia, intégrala fluidamente en tu diálogo diciendo algo como "Según enseñamos en Futuro Academy..." o "De acuerdo con nuestro manual...". NUNCA uses corchetes, ni códigos ni etiquetas de fuentes.
 `;
+}
 
 function getCRMData() {
     if (!fs.existsSync(CRM_FILE)) return [];
@@ -49,7 +82,7 @@ app.post('/api/chat', async (req, res) => {
     try {
         let inputData = message;
         if (!previous_id) {
-            inputData = `${SYSTEM_INSTRUCTION}\n\n--- INICIO DE LA CONVERSACIÓN ---\nUsuario: ${message}`;
+            inputData = `${getSystemInstruction()}\n\n--- INICIO DE LA CONVERSACIÓN ---\nUsuario: ${message}`;
         }
 
         const options = { model: "gemini-3.5-flash", input: inputData };
@@ -57,7 +90,16 @@ app.post('/api/chat', async (req, res) => {
 
         const interaction = await ai.interactions.create(options);
         console.log(`[${new Date().toLocaleTimeString()}] 🤖 RESPUESTA IA LISTA.`);
-        res.json({ reply: interaction.output_text, interaction_id: interaction.id });
+        
+        const reply = interaction.output_text;
+        
+        // Detectar señales en la respuesta
+        const signals = {};
+        if (reply.includes('||QUIZ||')) signals.hasQuiz = true;
+        if (reply.includes('||CONSENTIMIENTO_INTERES||')) signals.hasConsentimiento = true;
+        if (reply.includes('||LEAD_LISTO||')) signals.hasLeadListo = true;
+        
+        res.json({ reply, interaction_id: interaction.id, signals });
     } catch (error) {
         console.error("❌ ERROR GEMINI:", error.message || error);
         res.status(500).json({ error: "No se pudo conectar con la IA." });
@@ -70,7 +112,7 @@ app.post('/api/evaluate', async (req, res) => {
     console.log(`[${new Date().toLocaleTimeString()}] 🔥 EVALUACIÓN DE LEAD EN SERVIDOR 🔥`);
     console.log(`==================================================`);
     
-    const { email, history } = req.body;
+    const { email, history, consentimiento_interes, quiz_resultados } = req.body;
 
     try {
         const prompt = `
@@ -86,6 +128,9 @@ app.post('/api/evaluate', async (req, res) => {
             "etapa_embudo": "Listo para asesor",
             "resumen_necesidad": "Resumen claro de lo que busca el cliente y monto",
             "objeciones_detectadas": ["Duda o temor 1"],
+            "ruta_aprendizaje": "Breve ruta de aprendizaje sugerida por el tutor",
+            "quiz_resultados": "Resultados del quiz si el usuario lo respondió",
+            "tema_interes": "Tema financiero específico que el usuario quería aprender",
             "accion_sugerida_ejecutivo": "Acción clara para el asesor (ej. Agendar reunión para presentar portafolio)",
             "estado_aprobacion": "Pendiente"
         }`;
@@ -108,6 +153,10 @@ app.post('/api/evaluate', async (req, res) => {
             etapa_embudo: leadData.etapa_embudo || "Calificado",
             resumen_necesidad: leadData.resumen_necesidad || "El cliente solicitó contacto comercial.",
             objeciones_detectadas: leadData.objeciones_detectadas || ["Ninguna"],
+            ruta_aprendizaje: leadData.ruta_aprendizaje || "",
+            quiz_resultados: quiz_resultados || leadData.quiz_resultados || "",
+            tema_interes: leadData.tema_interes || "",
+            señal_comercial_autorizada: consentimiento_interes || false,
             accion_sugerida_ejecutivo: leadData.accion_sugerida_ejecutivo || "Contactar al cliente para evaluar necesidades.",
             estado_aprobacion: leadData.estado_aprobacion || "Pendiente"
         };
@@ -153,6 +202,21 @@ app.delete('/api/leads/:index', (req, res) => {
     } else {
         res.status(404).json({ error: "Lead no encontrado" });
     }
+});
+
+// Endpoints para preguntas configurables
+app.get('/api/config-preguntas', (req, res) => {
+    res.json({ preguntas: getPreguntasConfigurables() });
+});
+
+app.post('/api/config-preguntas', (req, res) => {
+    const { preguntas } = req.body;
+    if (!preguntas || !Array.isArray(preguntas) || preguntas.length < 1) {
+        return res.status(400).json({ error: "Debe enviar un array de preguntas con al menos 1 elemento." });
+    }
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify({ preguntas }, null, 4), 'utf8');
+    console.log(`⚙️ PREGUNTAS CONFIGURABLES ACTUALIZADAS (${preguntas.length} preguntas)`);
+    res.json({ success: true, preguntas });
 });
 
 app.listen(PORT, () => {

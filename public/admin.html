@@ -44,6 +44,19 @@
             </div>
         </div>
         <p style="color: #5f6368; font-size: 14px;">Recuerda: Las acciones financieras sensibles quedan como propuesta por la IA. Debes revisarlas, aprobarlas (simular envío al cliente) o eliminar registros que ya no sean útiles.</p>
+        
+        <!-- SECCIÓN DE PREGUNTAS CONFIGURABLES -->
+        <details style="margin: 15px 0; background: #f8f9fa; border: 1px solid #dadce0; border-radius: 8px; padding: 10px;">
+            <summary style="cursor: pointer; font-weight: bold; color: #1a73e8;">⚙️ Configurar Preguntas de Calificación</summary>
+            <div id="preguntas-config-container" style="margin-top: 10px;">
+                <p style="color: #5f6368; font-size: 13px;">Estas preguntas guían la conversación del agente IA para calificar prospectos.</p>
+                <div id="preguntas-list"></div>
+                <button class="btn" onclick="addPreguntaField()" style="margin-top: 10px;">+ Agregar Pregunta</button>
+                <button class="btn btn-success" onclick="guardarPreguntas()" style="margin-top: 10px;">💾 Guardar Configuración</button>
+                <span id="preguntas-status" style="margin-left: 10px; font-size: 13px;"></span>
+            </div>
+        </details>
+        
         <hr>
         <div id="leads-container"></div>
     </div>

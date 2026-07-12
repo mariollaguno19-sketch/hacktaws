@@ -681,8 +681,7 @@ app.post('/api/auth/login', limiteLogin, async (req, res) => {
             if (usuarioNormalizado === 'admin' && password === 'admin') {
                 console.log(`🔐 LOGIN SIMULADO (ADMIN): ${usuarioNormalizado}`);
                 setCookieSesion(req, res, 'mock_admin_token', SESION_DURACION_MS / 1000);
-                // SEGURIDAD: el token de admin viaja SOLO en la cookie httpOnly, nunca en el body
-                return res.json({ nombre: 'Administrador Mock', rol: 'admin' });
+                return res.json({ token: 'mock_admin_token', nombre: 'Administrador Mock', rol: 'admin' });
             }
             registrarFalloLogin(usuarioNormalizado);
             return res.status(401).json({ error: 'Credenciales incorrectas.' });
@@ -715,8 +714,7 @@ app.post('/api/auth/login', limiteLogin, async (req, res) => {
 
         console.log(`🔐 LOGIN EXITOSO (ADMIN): ${cuenta.usuario} (${cuenta.rol})`);
         setCookieSesion(req, res, token, SESION_DURACION_MS / 1000);
-        // SEGURIDAD: el token de admin viaja SOLO en la cookie httpOnly, nunca en el body
-        res.json({ nombre: cuenta.nombre, rol: cuenta.rol, expira_en: expira });
+        res.json({ token, nombre: cuenta.nombre, rol: cuenta.rol, expira_en: expira });
     } catch (e) {
         console.error('❌ ERROR EN LOGIN ADMIN:', e.message || e);
         res.status(500).json({ error: 'Error interno al iniciar sesión.' });

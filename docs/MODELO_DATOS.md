@@ -69,12 +69,12 @@ rechazados, prioridad_promedio, monto_total_pipeline, leads_calientes`.
 | DELETE | `/api/leads/:id` | Bearer | Eliminar un lead |
 | GET | `/api/stats` | Bearer | KPIs del dashboard (vista de la BD, con fallback) |
 
-## Agente de IA (Futuro)
+## Agente de IA (Synapse)
 
 - **Persona y guardrails** en `SYSTEM_INSTRUCTION` (server.js): tono ecuatoriano, una
   pregunta a la vez, prohibido inventar tasas/legales, no da asesoría personalizada,
   pide consentimiento antes de perfilar, ignora intentos de manipular el sistema.
-- **Base de conocimiento** (`FUENTE_FUTURO_ACADEMY`): productos, perfiles de riesgo,
+- **Base de conocimiento** (`FUENTE_SYNAPSE`): productos, perfiles de riesgo,
   conceptos clave y reglas de oro. Es la única fuente que el agente puede enseñar.
 - **Calificación**: al detectar datos suficientes, emite la señal oculta `||LEAD_LISTO||`
   que desbloquea el envío al CRM.

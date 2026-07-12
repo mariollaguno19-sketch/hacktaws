@@ -1866,6 +1866,105 @@
                 scroll-behavior: auto !important;
             }
         }
+
+        /* ── Estilos de FAQ Accordion ── */
+        .faq-section {
+            margin-top: 56px;
+            text-align: left;
+            width: 100%;
+        }
+
+        .faq-section h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #ffffff;
+            text-align: center;
+            letter-spacing: -0.02em;
+        }
+
+        .faq-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .faq-item:hover {
+            border-color: rgba(197, 248, 42, 0.2);
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        .faq-item summary {
+            padding: 20px 24px;
+            font-weight: 600;
+            font-size: 15px;
+            color: #ffffff;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            list-style: none;
+        }
+
+        .faq-item summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .faq-item summary::after {
+            content: '+';
+            font-size: 20px;
+            color: #c5f82a;
+            font-weight: 400;
+            transition: transform 0.3s;
+        }
+
+        .faq-item[open] summary::after {
+            transform: rotate(45deg);
+        }
+
+        .faq-item[open] {
+            border-color: rgba(197, 248, 42, 0.25);
+            box-shadow: 0 0 15px rgba(197, 248, 42, 0.05);
+        }
+
+        .faq-content {
+            padding: 0 24px 20px 24px;
+            font-size: 13.5px;
+            color: #cbd5e1;
+            line-height: 1.6;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            padding-top: 16px;
+        }
+
+        /* ── Estilos de la Sección Footer ── */
+        .home-footer {
+            margin-top: 64px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding-top: 24px;
+            text-align: center;
+            font-size: 12.5px;
+            color: #64748b;
+        }
+
+        .home-footer a {
+            color: #c5f82a;
+            text-decoration: none;
+        }
+        
+        .home-footer a:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -1973,53 +2072,124 @@
        VISTA 1: PORTAL INICIO (#home-view)
        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
     <div id="home-view" class="spa-view active">
-        <div class="home-container">
+        <div class="home-container" style="max-width: 1000px; margin: 0 auto; padding: 40px 24px;">
             <!-- Hero de Onboarding / Explicativo de Synapse -->
-            <div class="onboarding-hero">
-                <h2>Convierte cada conversación en un cliente</h2>
-                <p>Synapse es tu asesor financiero con IA (Google Gemini 3.5 Flash): educa a tus prospectos, los califica en lenguaje natural y llena tu CRM automáticamente — mientras tu ejecutivo mantiene siempre el control (Human-in-the-loop).</p>
+            <div class="onboarding-hero" style="text-align: center; margin-bottom: 56px; padding: 48px 32px; background: radial-gradient(circle at top right, rgba(197, 248, 42, 0.08), transparent 60%), rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 24px; position: relative; overflow: hidden;">
+                <div style="display: inline-block; padding: 6px 16px; border-radius: 9999px; background: rgba(197, 248, 42, 0.1); border: 1px solid rgba(197, 248, 42, 0.25); color: #c5f82a; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px;">
+                    Powered by Google Gemini 3.5 Flash
+                </div>
+                <h1 style="font-size: clamp(32px, 5vw, 48px); font-weight: 800; line-height: 1.15; color: #ffffff; letter-spacing: -0.03em; margin-bottom: 18px; text-shadow: 0 4px 12px rgba(0,0,0,0.4);">
+                    La Próxima Generación de <br>
+                    <span style="background: linear-gradient(135deg, #c5f82a 0%, #38bdf8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Asesoría Financiera Inteligente</span>
+                </h1>
+                <p style="font-size: clamp(15px, 2vw, 17px); color: #94a3b8; line-height: 1.6; max-width: 720px; margin: 0 auto 32px auto;">
+                    Synapse educa a tus prospectos en lenguaje natural, califica automáticamente su perfil de inversión y conecta sus intenciones directamente en el CRM de Supabase en tiempo real.
+                </p>
                 
-                <div class="features-grid">
-                    <div class="feature-item">
-                        <h4>1. Asistente Conversacional</h4>
-                        <p>Interactúa con los clientes, responde dudas de inversión usando reglas seguras y califica su perfil (B2B/B2C, presupuesto, riesgo).</p>
-                    </div>
-                    <div class="feature-item">
-                        <h4>2. Análisis de Perfil</h4>
-                        <p>Detecta el momento oportuno de calificación comercial e inyecta la información estructurada de forma inmediata en el CRM.</p>
-                    </div>
-                    <div class="feature-item">
-                        <h4>3. Bandeja CRM con IA</h4>
-                        <p>Los asesores auditan métricas del pipeline en tiempo real, revisan objeciones y activan análisis profundos del prospecto con Gemini.</p>
-                    </div>
+                <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn-pill" style="padding: 14px 28px; font-size: 15px; font-weight: 700; box-shadow: 0 8px 24px rgba(197, 248, 42, 0.25);" onclick="navigateTo('client')">
+                        🚀 Probar Canal del Cliente
+                    </button>
+                    <button class="btn-pill btn-pill-dark" style="padding: 14px 28px; font-size: 15px; font-weight: 700; border: 1px solid rgba(255,255,255,0.15);" onclick="navigateTo('admin')">
+                        💼 Gestionar Bandeja CRM
+                    </button>
                 </div>
             </div>
 
-            <!-- Bento Grid de Accesos -->
-            <div class="bento-grid" style="width: 100%; max-width: 100%;">
-                <div class="bento-card bento-header" style="min-height: 180px;">
+            <!-- Bento Grid de Accesos Rápidos y Roles -->
+            <div class="bento-grid" style="width: 100%; max-width: 100%; margin-bottom: 56px;">
+                <div class="bento-card bento-header" style="min-height: 140px;">
                     <div class="bento-header-content">
-                        <div class="subtitle">Empieza en segundos</div>
-                        <h1>¿Por dónde quieres empezar?</h1>
-                        <p>Prueba el asistente como si fueras un cliente, o entra al panel y observa cómo la IA califica tus prospectos en tiempo real.</p>
+                        <div class="subtitle">Canales Disponibles</div>
+                        <h1>Acceso Directo a los Módulos</h1>
+                        <p>Navega rápidamente a la interfaz del inversionista para simular una asesoría o al panel del ejecutivo para administrar el pipeline.</p>
                     </div>
                 </div>
 
                 <div class="bento-card bento-client">
                     <div class="card-title-area">
-                        <h2>Habla con tu asesor IA</h2>
-                        <p>Cuéntale tus metas y recibe orientación de inversión personalizada en minutos. Sin formularios: solo una conversación.</p>
+                        <div style="font-size: 11px; font-weight: 700; color: #38bdf8; text-transform: uppercase; margin-bottom: 6px;">Portal de Clientes</div>
+                        <h2>Simular Asesoría de Inversión</h2>
+                        <p>Inicia sesión con un correo, conversa con la IA y evalúa tu idoneidad para Renta Fija o Fondos Mutuos sin formularios tradicionales.</p>
                     </div>
-                    <button class="btn-pill" onclick="navigateTo('client')">Comenzar ahora →</button>
+                    <button class="btn-pill" onclick="navigateTo('client')">Ingresar como Cliente →</button>
                 </div>
 
                 <div class="bento-card bento-admin">
                     <div class="card-title-area">
-                        <h2>Panel del Ejecutivo</h2>
-                        <p>Revisa tus leads ya calificados por la IA, analiza objeciones y aprueba propuestas con un solo clic.</p>
+                        <div style="font-size: 11px; font-weight: 700; color: #c5f82a; text-transform: uppercase; margin-bottom: 6px;">Portal Ejecutivo</div>
+                        <h2>Bandeja de Gestión CRM</h2>
+                        <p>Accede con las credenciales <code>admin</code> / <code>admin</code> para supervisar leads calificados, resolver objeciones y correr auditorías de IA.</p>
                     </div>
-                    <button class="btn-pill" onclick="navigateTo('admin')">Entrar al panel →</button>
+                    <button class="btn-pill" onclick="navigateTo('admin')">Ingresar como Asesor →</button>
                 </div>
+            </div>
+
+            <!-- Sección de Características de Producto -->
+            <div style="margin-bottom: 56px;">
+                <h3 style="font-size: 24px; font-weight: 700; text-align: center; color: #ffffff; margin-bottom: 32px; letter-spacing: -0.02em;">
+                    ¿Cómo revoluciona Synapse el CRM de Inversión?
+                </h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+                    <div style="background: rgba(15, 23, 42, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); padding: 24px; border-radius: 20px;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(56, 189, 248, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; color: #38bdf8; font-weight: 700;">💬</div>
+                        <h4 style="font-size: 16px; color: #ffffff; font-weight: 600; margin-bottom: 8px;">Asistente con Grounding</h4>
+                        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin: 0;">Respuestas blindadas sobre Renta Fija y Fondos Mutuos, validadas contra la base de conocimientos financieros sin alucinaciones.</p>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); padding: 24px; border-radius: 20px;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(197, 248, 42, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; color: #c5f82a; font-weight: 700;">📊</div>
+                        <h4 style="font-size: 16px; color: #ffffff; font-weight: 600; margin-bottom: 8px;">Calificación en Tiempo Real</h4>
+                        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin: 0;">Conversión autónoma de chats desestructurados a registros de base de datos con prioridad, presupuesto y objeciones clasificadas.</p>
+                    </div>
+                    <div style="background: rgba(15, 23, 42, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); padding: 24px; border-radius: 20px;">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(251, 146, 60, 0.1); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; color: #fb923c; font-weight: 700;">🔍</div>
+                        <h4 style="font-size: 16px; color: #ffffff; font-weight: 600; margin-bottom: 8px;">Auditoría Avanzada de Venta</h4>
+                        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin: 0;">Un clic para obtener análisis comercial psicológico, plantillas de email personalizadas y guiones de objeción generados por IA.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Preguntas Frecuentes (FAQs) -->
+            <div class="faq-section">
+                <h3>Preguntas Frecuentes (FAQs)</h3>
+                <div class="faq-list">
+                    <details class="faq-item">
+                        <summary>¿Qué es Synapse y a quién está dirigido?</summary>
+                        <div class="faq-content">
+                            Synapse es una plataforma conversacional inteligente y centro de control CRM para instituciones financieras y asesores de inversión. Ayuda a educar a clientes potenciales sobre productos como Renta Fija y Fondos Mutuos, recopilar sus necesidades en lenguaje natural, y transferirlos automáticamente a una bandeja ejecutiva calificados por prioridad e intencionalidad de inversión.
+                        </div>
+                    </details>
+                    <details class="faq-item">
+                        <summary>¿Cómo funciona la calificación autónoma de prospectos?</summary>
+                        <div class="faq-content">
+                            A medida que el cliente conversa con la inteligencia artificial, el sistema analiza el contexto de los mensajes en segundo plano. Cuando detecta que el cliente ha provisto información clave (monto de inversión, tipo de cliente B2B/B2C, tolerancia al riesgo y necesidades principales), habilita automáticamente el envío del perfil al CRM para que el ejecutivo tome el control del flujo comercial.
+                        </div>
+                    </details>
+                    <details class="faq-item">
+                        <summary>¿Cómo activo Gemini en modo Real en lugar de Simulado?</summary>
+                        <div class="faq-content">
+                            Para cambiar del modo simulado local al motor real de IA de Google, haz clic en el botón superior <strong>"Activa Synapse"</strong>. Se abrirá un panel donde puedes ingresar tu clave API (API Key) personal de Google AI Studio. Esta clave se guardará localmente en tu sesión para enrutar todas las consultas de chat y reportes comerciales avanzados directamente con el modelo Gemini 3.5 Flash.
+                        </div>
+                    </details>
+                    <details class="faq-item">
+                        <summary>¿Las métricas y KPIs de la bandeja ejecutiva son reales?</summary>
+                        <div class="faq-content">
+                            Sí, todas las métricas del CRM (incluido el volumen total del portafolio en la tarjeta VISA, la distribución corporativa B2B/B2C, los gráficos de estado y el historial de leads) se leen y calculan dinámicamente de forma directa desde las tablas correspondientes en la base de datos de Supabase en tiempo real.
+                        </div>
+                    </details>
+                    <details class="faq-item">
+                        <summary>¿Qué es la "Auditoría IA Avanzada" en las tarjetas de leads?</summary>
+                        <div class="faq-content">
+                            Es un panel deslizable a disposición de los asesores. Cuando un ejecutivo hace clic en este botón para cualquier prospecto, Gemini analiza todo el historial de la conversación sostenida con el cliente para generar un perfil de comportamiento, una estrategia de venta sugerida, un guión para combatir objeciones detectadas, y una plantilla de correo electrónico redactada a medida que puede copiarse con un solo clic.
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- Footer Corporativo -->
+            <div class="home-footer">
+                <p>© 2026 Synapse CRM. Diseñado con alta estética y robustez para el reto HackTAWS.</p>
+                <p style="margin-top: 6px;">Pair programming asistido por <a href="https://deepmind.google" target="_blank">Antigravity AI (Google DeepMind)</a>.</p>
             </div>
         </div>
     </div>

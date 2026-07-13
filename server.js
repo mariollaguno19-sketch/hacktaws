@@ -280,6 +280,20 @@ if (isMockDb) {
         }
     ];
     const sesionesDb = [];
+    const historialAccionesDb = [];
+
+    // Poblar historial de acciones iniciales
+    leadsDb.forEach(l => {
+        historialAccionesDb.push({
+            id: crypto.randomUUID(),
+            lead_id: l.id,
+            usuario: l.asesor_asignado || 'IA_Synapse',
+            accion: 'creacion',
+            detalle: 'Lead calificado y creado en el CRM',
+            creado_en: l.creado_en
+        });
+    });
+
     const usuariosDb = [
         {
             id: 1,
@@ -357,6 +371,16 @@ if (isMockDb) {
                     }
                 } else {
                     data = leadsDb;
+                }
+            } else if (this.table === 'historial_acciones') {
+                if (this.insertData) {
+                    const newLog = Object.assign({ id: crypto.randomUUID(), creado_en: new Date().toISOString() }, this.insertData);
+                    historialAccionesDb.push(newLog);
+                    data = newLog;
+                } else if (this.filters.lead_id) {
+                    data = historialAccionesDb.filter(log => log.lead_id === this.filters.lead_id);
+                } else {
+                    data = historialAccionesDb;
                 }
             }
             
@@ -1215,6 +1239,111 @@ app.get('/api/leads/:id', requiereAuth, async (req, res) => {
     }
 });
 
+// ════════════════════════════════════════════════════════════════
+// CANAL WHATSAPP (retargeting human-in-the-loop)
+// Genera borradores de mensaje personalizados por lead y enlaces wa.me.
+// NUNCA envía nada: el ejecutivo abre WhatsApp con el borrador precargado
+// y decide si lo envía — cumpliendo la regla de cero acciones automáticas.
+// ════════════════════════════════════════════════════════════════
+
+// Normaliza un teléfono al formato internacional de wa.me (Ecuador por defecto)
+function telefonoAWhatsapp(telefono) {
+    if (typeof telefono !== 'string') return null;
+    let digitos = telefono.replace(/\D/g, '');
+    if (!digitos) return null;
+    if (digitos.startsWith('09') && digitos.length === 10) digitos = '593' + digitos.slice(1); // celular local EC
+    if (digitos.startsWith('0')) digitos = '593' + digitos.slice(1);
+    if (digitos.length < 10 || digitos.length > 15) return null;
+    return digitos;
+}
+
+// Construye los borradores de retargeting según el estado y perfil del lead
+function generarMensajesWhatsapp(lead, nombreAsesor) {
+    const nombre = (lead.correo_cliente || '').split('@')[0].replace(/[._\d]+/g, ' ').trim() || 'estimado cliente';
+    const monto = lead.monto_estimado ? `$${Number(lead.monto_estimado).toLocaleString('en-US')}` : null;
+    const interes = lead.interes_principal || 'nuestros productos de inversión';
+    const tema = lead.tema_interes_educativo;
+    const estado = lead.estado_aprobacion || 'Pendiente';
+    const mensajes = [];
+
+    // 1. Primer contacto (lead recién calificado)
+    mensajes.push({
+        tipo: 'primer_contacto',
+        etiqueta: 'Primer contacto',
+        texto: `Hola ${nombre}, le saluda ${nombreAsesor} de Synapse. Recibí su perfil de inversión${monto ? ` por un monto aproximado de ${monto}` : ''} con interés en ${interes}. ¿Le parece si coordinamos una llamada breve esta semana para presentarle una propuesta a su medida?`
+    });
+
+    // 2. Seguimiento de propuesta (si el ejecutivo ya aprobó)
+    if (estado.includes('APROBADO') || estado.includes('EDITADO')) {
+        mensajes.push({
+            tipo: 'seguimiento_propuesta',
+            etiqueta: 'Seguimiento de propuesta',
+            texto: `Hola ${nombre}, le escribe ${nombreAsesor} de Synapse. Su propuesta de ${interes}${monto ? ` (${monto})` : ''} ya está lista y aprobada por nuestro equipo. ¿Qué día le viene bien para revisarla juntos? Puedo llamarle o enviársela por este medio.`
+        });
+    }
+
+    // 3. Retargeting educativo (Historia 2: usa el tema de interés consentido)
+    if (tema) {
+        mensajes.push({
+            tipo: 'retargeting_educativo',
+            etiqueta: 'Retargeting educativo',
+            texto: `Hola ${nombre}, soy ${nombreAsesor} de Synapse. Vi que completó nuestro quiz sobre ${tema}${Number.isInteger(lead.quiz_puntaje) ? ` con ${lead.quiz_puntaje}/3 aciertos` : ''} — ¡felicitaciones! Le preparé material adicional sobre ${tema} sin ningún compromiso. ¿Se lo comparto por aquí?`
+        });
+    } else if ((lead.accion_categoria || '') === 'Enviar material educativo') {
+        mensajes.push({
+            tipo: 'retargeting_educativo',
+            etiqueta: 'Material educativo',
+            texto: `Hola ${nombre}, le saluda ${nombreAsesor} de Synapse. Le preparé una guía introductoria sobre ${interes}, pensada para resolver justo las dudas que conversamos. ¿Se la envío por aquí? Sin compromiso.`
+        });
+    }
+
+    // 4. Reactivación (lead rechazado o frío)
+    const diasDesdeCreacion = lead.creado_en ? (Date.now() - new Date(lead.creado_en).getTime()) / 86400000 : 0;
+    if (estado.includes('RECHAZADO') || diasDesdeCreacion > 14) {
+        mensajes.push({
+            tipo: 'reactivacion',
+            etiqueta: 'Reactivación',
+            texto: `Hola ${nombre}, le saluda ${nombreAsesor} de Synapse. Hace un tiempo conversamos sobre ${interes} y quería contarle que tenemos novedades que podrían interesarle. Si es buen momento para retomar, aquí estoy — y si no, no hay problema.`
+        });
+    }
+
+    return mensajes;
+}
+
+// Borradores de WhatsApp para un lead (requiere sesión de ejecutivo)
+app.get('/api/leads/:id/whatsapp', requiereAuth, async (req, res) => {
+    const { id } = req.params;
+    if (!UUID_REGEX.test(id)) {
+        return res.status(400).json({ error: 'Identificador de lead no válido.' });
+    }
+    try {
+        const { data: lead, error } = await supabase
+            .from('leads').select('*').eq('id', id).maybeSingle();
+        if (error) throw error;
+        if (!lead) return res.status(404).json({ error: 'Lead no encontrado.' });
+
+        const numero = telefonoAWhatsapp(lead.telefono);
+        const mensajes = generarMensajesWhatsapp(lead, req.usuario.nombre || 'su asesor').map(m => ({
+            ...m,
+            // El enlace abre WhatsApp con el borrador; el envío siempre es decisión humana
+            url_wa: numero ? `https://wa.me/${numero}?text=${encodeURIComponent(m.texto)}` : null
+        }));
+
+        await registrarAuditoria(id, req.usuario.usuario, 'WHATSAPP_PREPARADO',
+            `Borradores generados: ${mensajes.map(m => m.tipo).join(', ')}`);
+
+        res.json({
+            telefono: lead.telefono || null,
+            telefono_whatsapp: numero,
+            tiene_telefono: !!numero,
+            mensajes
+        });
+    } catch (e) {
+        console.error('❌ ERROR GENERANDO WHATSAPP:', e.message || e);
+        res.status(500).json({ error: 'No se pudieron generar los mensajes de WhatsApp.' });
+    }
+});
+
 // Endpoint de Auditoría y Análisis Avanzado Synapse con Gemini
 app.get('/api/leads/:id/synapse-analysis', requiereAuth, async (req, res) => {
     const { id } = req.params;
@@ -1231,7 +1360,7 @@ app.get('/api/leads/:id/synapse-analysis', requiereAuth, async (req, res) => {
         const aiClient = getAIClient(req);
         
         // Si estamos usando el mock
-        if (aiClient === mockAiClient) {
+        if (aiClient === dummyGeminiClient) {
             const mockReport = {
                 perfil_comportamiento: "Cliente B2C analítico y conservador en su enfoque. Muestra un interés genuino en proteger el capital y evitar especulaciones. Nivel de urgencia: Alto (desea iniciar este mes).",
                 estrategia_comercial: "1. Destacar la solidez institucional y las pólizas de renta fija garantizadas.\n2. No apresurar con términos complejos de renta variable; mantener el foco en interés compuesto y liquidez.\n3. Ofrecer un simulador de rendimientos personalizado.",

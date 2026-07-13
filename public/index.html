@@ -2119,6 +2119,54 @@
         }
         .syn-quiz .qz-btn.sec { background: rgba(255, 255, 255, 0.06); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.12); }
 
+        /* ════════════════════════════════════════════════
+           CANAL WHATSAPP — retargeting human-in-the-loop
+           ════════════════════════════════════════════════ */
+        .btn-whatsapp {
+            background: rgba(37, 211, 102, 0.12) !important;
+            color: #4ade80 !important;
+            border: 1px solid rgba(37, 211, 102, 0.35) !important;
+            margin-left: 8px;
+        }
+        .btn-whatsapp:hover:not(:disabled) { background: rgba(37, 211, 102, 0.22) !important; }
+        .syn-wa-panel {
+            margin-top: 16px; padding: 16px;
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(37, 211, 102, 0.25);
+            border-radius: 12px;
+            animation: synPop var(--dur-med) var(--ease-smooth) both;
+        }
+        .syn-wa-head {
+            font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+            text-transform: uppercase; color: #4ade80; margin-bottom: 12px;
+        }
+        .syn-wa-msg {
+            padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .syn-wa-tipo { font-size: 12px; font-weight: 700; color: var(--text-strong); margin-bottom: 6px; }
+        .syn-wa-texto {
+            font-size: 13px; color: #cbd5e1; line-height: 1.55; margin: 0 0 10px 0;
+            background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 10px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .syn-wa-acciones { display: flex; gap: 10px; flex-wrap: wrap; }
+        .syn-wa-btn {
+            display: inline-block; text-decoration: none; cursor: pointer;
+            background: #25d366; color: #06281a; border: none;
+            padding: 8px 16px; border-radius: 9999px;
+            font-size: 12.5px; font-weight: 700; font-family: inherit;
+            transition: transform var(--dur-fast) var(--ease-smooth), filter var(--dur-fast) ease;
+        }
+        .syn-wa-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+        .syn-wa-btn.sec {
+            background: rgba(255, 255, 255, 0.06); color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .syn-wa-nota {
+            font-size: 11.5px; color: var(--text-muted); line-height: 1.5;
+            margin: 12px 0 0 0; border-left: 2px solid rgba(37, 211, 102, 0.3); padding-left: 10px;
+        }
+
         /* ── Accesibilidad: respeta la preferencia de menos movimiento ── */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
@@ -4521,6 +4569,16 @@
             btnAudit.addEventListener('click', () => openAuditDrawer(lead.id));
             leftGroup.appendChild(btnAudit);
 
+            // Canal WhatsApp: borradores de retargeting (el envío siempre es humano)
+            const btnWhatsapp = document.createElement('button');
+            btnWhatsapp.className = 'btn-action btn-whatsapp';
+            btnWhatsapp.textContent = 'WhatsApp';
+            btnWhatsapp.title = lead.telefono
+                ? 'Generar borradores de retargeting para WhatsApp'
+                : 'Este lead no registró teléfono: podrás copiar el borrador para otro canal';
+            btnWhatsapp.addEventListener('click', () => toggleWhatsappPanel(lead.id, card, btnWhatsapp));
+            leftGroup.appendChild(btnWhatsapp);
+
             const rightGroup = document.createElement('div');
             const btnEliminar = document.createElement('button');
             btnEliminar.className = 'btn-action btn-delete';
@@ -4533,6 +4591,89 @@
             card.appendChild(actionArea);
 
             return card;
+        }
+
+        // ── Panel de borradores WhatsApp (retargeting human-in-the-loop) ──
+        async function toggleWhatsappPanel(leadId, card, boton) {
+            const existente = card.querySelector('.syn-wa-panel');
+            if (existente) { existente.remove(); return; }
+
+            boton.disabled = true;
+            boton.textContent = 'Generando...';
+            try {
+                const res = await fetchAutenticado(`/api/leads/${leadId}/whatsapp`);
+                const data = await res.json();
+                if (!res.ok) {
+                    alert(data.error || 'No se pudieron generar los borradores.');
+                    return;
+                }
+
+                const panel = document.createElement('div');
+                panel.className = 'syn-wa-panel';
+
+                const encabezado = document.createElement('div');
+                encabezado.className = 'syn-wa-head';
+                encabezado.textContent = data.tiene_telefono
+                    ? `Borradores de retargeting — WhatsApp ${data.telefono}`
+                    : 'Borradores de retargeting — sin teléfono registrado (usa Copiar para otro canal)';
+                panel.appendChild(encabezado);
+
+                data.mensajes.forEach(m => {
+                    const fila = document.createElement('div');
+                    fila.className = 'syn-wa-msg';
+
+                    const tipo = document.createElement('div');
+                    tipo.className = 'syn-wa-tipo';
+                    tipo.textContent = m.etiqueta;
+                    fila.appendChild(tipo);
+
+                    const texto = document.createElement('p');
+                    texto.className = 'syn-wa-texto';
+                    texto.textContent = m.texto;
+                    fila.appendChild(texto);
+
+                    const acciones = document.createElement('div');
+                    acciones.className = 'syn-wa-acciones';
+
+                    if (m.url_wa) {
+                        const abrir = document.createElement('a');
+                        abrir.className = 'syn-wa-btn';
+                        abrir.href = m.url_wa;
+                        abrir.target = '_blank';
+                        abrir.rel = 'noopener noreferrer';
+                        abrir.textContent = 'Abrir en WhatsApp';
+                        acciones.appendChild(abrir);
+                    }
+
+                    const copiar = document.createElement('button');
+                    copiar.className = 'syn-wa-btn sec';
+                    copiar.textContent = 'Copiar texto';
+                    copiar.addEventListener('click', async () => {
+                        try {
+                            await navigator.clipboard.writeText(m.texto);
+                            copiar.textContent = 'Copiado ✓';
+                            setTimeout(() => { copiar.textContent = 'Copiar texto'; }, 1600);
+                        } catch (e) { alert('No se pudo copiar al portapapeles.'); }
+                    });
+                    acciones.appendChild(copiar);
+
+                    fila.appendChild(acciones);
+                    panel.appendChild(fila);
+                });
+
+                const nota = document.createElement('p');
+                nota.className = 'syn-wa-nota';
+                nota.textContent = 'El enlace abre WhatsApp con el borrador precargado: nada se envía sin tu confirmación. Cada generación queda registrada en la auditoría del lead.';
+                panel.appendChild(nota);
+
+                card.appendChild(panel);
+                panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } catch (e) {
+                if (e.message !== 'Sesión no válida') alert('Error al generar los borradores de WhatsApp.');
+            } finally {
+                boton.disabled = false;
+                boton.textContent = 'WhatsApp';
+            }
         }
 
         async function takeAction(leadId, accion, textoAccion) {

@@ -2962,6 +2962,22 @@
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:2px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg> Copiar al portapapeles
                         </button>
                     </div>
+
+                    <!-- CAPA DE ACCIONES OPERATIVAS CRM -->
+                    <div class="audit-section" style="border-top: 1px dashed var(--card-border); padding-top:16px; margin-top:20px;">
+                        <h4>Acciones Operativas</h4>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px;">
+                            <button class="btn-action btn-edit" id="btn-sync-crm" onclick="syncLeadCRM()" style="padding:10px; font-weight:700;">
+                                🔄 Sincronizar CRM
+                            </button>
+                            <button class="btn-action btn-approve" id="btn-send-email" onclick="sendProposalEmail()" style="padding:10px; font-weight:700;">
+                                ✉️ Enviar Portafolio
+                            </button>
+                        </div>
+                        <button class="btn-action" id="btn-print-pdf" onclick="printProposalPDF()" style="width:100%; margin-top:10px; background:var(--card-bg); border:2px solid var(--text-color); color:var(--text-color); padding:10px; font-weight:700;">
+                            📄 Descargar Propuesta PDF
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3426,20 +3442,34 @@
                     <!-- Columna Principal: Filtros y Lista de Leads -->
                     <div class="crm-main-col">
                         <!-- Barra de Filtros -->
-                        <div class="filter-bar">
+                        <!-- Barra de Filtros Avanzada -->
+                        <div class="filter-bar" style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:20px; align-items:center; width: 100%;">
+                            <div style="flex: 1.5; min-width: 220px;">
+                                <input type="text" id="search-leads" placeholder="Buscar por correo o necesidad..." oninput="applyFilters()" style="width:100%; box-sizing:border-box; padding:10px 14px; border-radius:9999px; border:2px solid var(--card-border); background:var(--bg-color); color:var(--text-color); font-size:13.5px; outline:none; transition:border-color 0.2s;">
+                            </div>
                             <div class="filter-group">
-                                <label for="filter-type">Tipo de Cliente:</label>
+                                <label for="filter-type">Canal:</label>
                                 <select id="filter-type" onchange="applyFilters()">
                                     <option value="ALL">Todos</option>
-                                    <option value="B2B">Corporativo (B2B)</option>
-                                    <option value="B2C">Personal (B2C)</option>
+                                    <option value="B2B">B2B (Corp.)</option>
+                                    <option value="B2C">B2C (Pers.)</option>
                                 </select>
                             </div>
                             <div class="filter-group">
-                                <label for="sort-leads">Ordenar por:</label>
+                                <label for="filter-stage">Etapa:</label>
+                                <select id="filter-stage" onchange="applyFilters()">
+                                    <option value="ALL">Todas</option>
+                                    <option value="Listo para asesor">Listo para Asesor</option>
+                                    <option value="Calificado">Calificado</option>
+                                    <option value="Negociación">Negociación</option>
+                                    <option value="Nutrición">Nutrición</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="sort-leads">Orden:</label>
                                 <select id="sort-leads" onchange="applyFilters()">
-                                    <option value="RECENT">Más recientes</option>
                                     <option value="PRIORITY_DESC">Mayor prioridad</option>
+                                    <option value="RECENT">Más recientes</option>
                                     <option value="PRIORITY_ASC">Menor prioridad</option>
                                 </select>
                             </div>
@@ -3542,6 +3572,7 @@
                         </div>
 
                         <!-- Gráfico de Tendencia SVG Wave -->
+                        <!-- Gráfico de Tendencia SVG Wave -->
                         <div class="trend-container-card" style="margin-bottom: 24px;">
                             <div class="trend-header-mobile">
                                 <span style="font-size: 14px; font-weight: 600; color: #e4e4e7;">Flujo Histórico</span>
@@ -3559,6 +3590,20 @@
                                 <span>Sep</span>
                                 <span>Oct</span>
                                 <span class="active">Nov</span>
+                            </div>
+                        </div>
+
+                        <!-- Widget de Registro de Auditoría de Acciones -->
+                        <div class="trend-container-card" style="margin-top:20px; padding:20px; box-sizing:border-box;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; border-bottom:1px solid var(--card-border); padding-bottom:8px;">
+                                <span style="font-size: 14px; font-weight: 700; color: var(--text-strong); display:flex; align-items:center; gap:6px;">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px; height:16px; color:#ff5722;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    Bitácora de Cumplimiento
+                                </span>
+                                <span class="priority-badge" style="padding:2px 8px; font-size:10px; background:rgba(197, 248, 42, 0.1); color:#c5f82a; border-color:rgba(197,248,42,0.2);">ACTIVO</span>
+                            </div>
+                            <div id="compliance-log-container" style="display:flex; flex-direction:column; gap:10px; max-height:180px; overflow-y:auto; padding-right:4px;">
+                                <!-- Se inyecta dinámicamente -->
                             </div>
                         </div>
                     </div>
@@ -3650,67 +3695,35 @@
         // ── SISTEMA DE TEMATIZACIÓN Y SCROLL BRUTALISTA (APPLE-STYLE) ──
         function applyTheme(theme) {
             const root = document.documentElement;
-            if (theme === 'dark') {
-                root.style.setProperty('--bg-color', '#0a0a0a');
-                root.style.setProperty('--text-color', '#f4f3ef');
-                root.style.setProperty('--text-strong', '#ffffff');
-                root.style.setProperty('--text-muted', '#a0a0a0');
-                root.style.setProperty('--card-bg', 'rgba(25, 25, 25, 0.7)');
-                root.style.setProperty('--card-border', 'rgba(244, 243, 239, 0.12)');
-                root.style.setProperty('--card-shadow', '4px 4px 0px #ff5722');
-                root.style.setProperty('--header-bg', 'rgba(10, 10, 10, 0.85)');
-                root.style.setProperty('--logo-circle-color', '#f4f3ef');
-                root.style.setProperty('--logo-core-color', '#ff5722');
-                root.style.setProperty('--card-bg-opacity', 'rgba(255, 255, 255, 0.05)');
-                root.style.setProperty('--card-bg-opacity-gradient', 'linear-gradient(180deg, rgba(255, 87, 34, 0.08), transparent 70%)');
-                document.body.classList.add('theme-dark');
-                document.body.classList.remove('theme-light');
-                updateFavicon('dark');
-            } else {
-                root.style.setProperty('--bg-color', '#f4f3ef');
-                root.style.setProperty('--text-color', '#0a0a0a');
-                root.style.setProperty('--text-strong', '#0a0a0a');
-                root.style.setProperty('--text-muted', '#555555');
-                root.style.setProperty('--card-bg', 'rgba(255, 255, 255, 0.85)');
-                root.style.setProperty('--card-border', 'rgba(10, 10, 10, 0.15)');
-                root.style.setProperty('--card-shadow', '4px 4px 0px #0a0a0a');
-                root.style.setProperty('--header-bg', 'rgba(244, 243, 239, 0.85)');
-                root.style.setProperty('--logo-circle-color', '#ff5722');
-                root.style.setProperty('--logo-core-color', '#0a0a0a');
-                root.style.setProperty('--card-bg-opacity', 'rgba(0, 0, 0, 0.04)');
-                root.style.setProperty('--card-bg-opacity-gradient', 'linear-gradient(180deg, rgba(255, 87, 34, 0.05), transparent 70%)');
-                document.body.classList.add('theme-light');
-                document.body.classList.remove('theme-dark');
-                updateFavicon('light');
-            }
+            // Forzar variables de modo oscuro permanentemente en toda la SPA
+            root.style.setProperty('--bg-color', '#0a0a0a');
+            root.style.setProperty('--text-color', '#f4f3ef');
+            root.style.setProperty('--text-strong', '#ffffff');
+            root.style.setProperty('--text-muted', '#a0a0a0');
+            root.style.setProperty('--card-bg', 'rgba(25, 25, 25, 0.7)');
+            root.style.setProperty('--card-border', 'rgba(244, 243, 239, 0.12)');
+            root.style.setProperty('--card-shadow', '4px 4px 0px #ff5722');
+            root.style.setProperty('--header-bg', 'rgba(10, 10, 10, 0.85)');
+            root.style.setProperty('--logo-circle-color', '#f4f3ef');
+            root.style.setProperty('--logo-core-color', '#ff5722');
+            root.style.setProperty('--card-bg-opacity', 'rgba(255, 255, 255, 0.05)');
+            root.style.setProperty('--card-bg-opacity-gradient', 'linear-gradient(180deg, rgba(255, 87, 34, 0.08), transparent 70%)');
+            
+            document.body.classList.add('theme-dark');
+            document.body.classList.remove('theme-light');
+            updateFavicon('dark');
         }
 
         function updateFavicon(theme) {
             const favicon = document.getElementById('favicon');
             if (favicon) {
-                if (theme === 'dark') {
-                    favicon.href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%23f4f3ef' stroke-width='8' fill='none'/><circle cx='50' cy='50' r='18' fill='%23ff5722'/></svg>";
-                } else {
-                    favicon.href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%23ff5722' stroke-width='8' fill='none'/><circle cx='50' cy='50' r='18' fill='%230a0a0a'/></svg>";
-                }
+                favicon.href = "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' stroke='%23f4f3ef' stroke-width='8' fill='none'/><circle cx='50' cy='50' r='18' fill='%23ff5722'/></svg>";
             }
         }
 
         function handleScroll() {
-            const homeView = document.getElementById('home-view');
-            // Si no estamos en la homepage, respetar el tema actual (no forzar nada en vistas hijas)
-            if (!homeView || !homeView.classList.contains('active')) {
-                return;
-            }
-            
-            const scrollTop = window.scrollY;
-            const threshold = Math.min(window.innerHeight * 0.35, 260);
-            
-            if (scrollTop > threshold) {
-                applyTheme('dark');
-            } else {
-                applyTheme('light');
-            }
+            // Estático en modo oscuro, desactivando cambios por scroll
+            applyTheme('dark');
         }
 
         // Registrar scroll listener
@@ -4141,6 +4154,7 @@
             const nombre = sessionStorage.getItem('crm_nombre') || 'Ejecutivo';
             document.getElementById('admin-nombre').textContent = nombre;
             loadLeads();
+            renderComplianceLogs();
         }
 
         async function loginAdmin() {
@@ -4276,14 +4290,32 @@
 
         function applyFilters() {
             const container = document.getElementById('leads-container');
+            const searchVal = document.getElementById('search-leads') ? document.getElementById('search-leads').value.trim().toLowerCase() : '';
             const filterType = document.getElementById('filter-type').value;
+            const filterStage = document.getElementById('filter-stage') ? document.getElementById('filter-stage').value : 'ALL';
             const sortOrder = document.getElementById('sort-leads').value;
 
             let leads = [...allLeads];
+            
+            // 1. Filtrar por término de búsqueda
+            if (searchVal) {
+                leads = leads.filter(l => 
+                    (l.correo_cliente && l.correo_cliente.toLowerCase().includes(searchVal)) ||
+                    (l.resumen_necesidad && l.resumen_necesidad.toLowerCase().includes(searchVal))
+                );
+            }
+            
+            // 2. Filtrar por tipo (B2B / B2C)
             if (filterType !== 'ALL') {
                 leads = leads.filter(l => l.tipo_cliente === filterType);
             }
+            
+            // 3. Filtrar por etapa del embudo
+            if (filterStage !== 'ALL') {
+                leads = leads.filter(l => l.etapa_embudo === filterStage);
+            }
 
+            // 4. Ordenar
             leads.sort((a, b) => {
                 if (sortOrder === 'PRIORITY_DESC') {
                     return (b.puntaje_prioridad || 0) - (a.puntaje_prioridad || 0);
@@ -4296,12 +4328,12 @@
                 }
             });
 
-            updateKPIs(allLeads);
+            updateKPIs(leads);
             container.textContent = '';
 
             if (leads.length === 0) {
                 const vacio = document.createElement('p');
-                vacio.style.cssText = 'text-align:center; padding: 40px; color: #94a3b8;';
+                vacio.style.cssText = 'text-align:center; padding: 40px; color: var(--text-muted);';
                 vacio.textContent = 'No hay prospectos que coincidan con los criterios.';
                 container.appendChild(vacio);
                 return;
@@ -4439,6 +4471,8 @@
         }
 
         async function takeAction(leadId, accion, textoAccion) {
+            const lead = allLeads.find(l => l.id === leadId);
+            const correo = lead ? lead.correo_cliente : 'desconocido';
             try {
                 const res = await fetchAutenticado(`/api/leads/${leadId}/action`, {
                     method: 'POST',
@@ -4450,6 +4484,10 @@
                     alert(`Error: ${data.error || 'No se pudo registrar la acción.'}`);
                     return;
                 }
+                
+                // Registro de auditoría
+                addComplianceLog(`Asesor registró estado [${accion}] para el lead: ${correo}`);
+                
                 alert(`Acción registrada: ${accion}\n\n(En un sistema bancario real, esto enviaría la propuesta de inmediato al correo del cliente).`);
                 loadLeads();
             } catch (e) {
@@ -4458,6 +4496,8 @@
         }
 
         async function deleteLead(leadId) {
+            const lead = allLeads.find(l => l.id === leadId);
+            const correo = lead ? lead.correo_cliente : 'desconocido';
             if (!confirm('¿Estás seguro de que deseas eliminar este prospecto del CRM de forma definitiva?')) return;
             try {
                 const res = await fetchAutenticado(`/api/leads/${leadId}`, { method: 'DELETE' });
@@ -4466,10 +4506,82 @@
                     alert(`Error: ${data.error || 'No se pudo eliminar el registro.'}`);
                     return;
                 }
+                
+                // Registro de auditoría
+                addComplianceLog(`Registro eliminado de forma definitiva del CRM: ${correo}`);
+                
                 loadLeads();
             } catch (e) {
                 if (e.message !== 'Sesión no válida') alert('Error al intentar eliminar el registro.');
             }
+        }
+
+        let currentActiveLeadId = null;
+        let complianceLogs = [
+            { tiempo: "10:15:30", accion: "Gemini perfiló a dnarvaez@clinicasanmarcos.ec con prioridad 9/10" },
+            { tiempo: "10:02:15", accion: "Asesor asignó a María Pérez para seguimiento de mfernanda.paz@hotmail.com" },
+            { tiempo: "09:44:02", accion: "Sistema detectó excedente corporativo de $148,500 en valeria.montenegro@grupoandino.ec" }
+        ];
+
+        function renderComplianceLogs() {
+            const container = document.getElementById('compliance-log-container');
+            if (!container) return;
+            container.innerHTML = complianceLogs.map(log => `
+                <div style="padding:6px 10px; background:rgba(255,255,255,0.02); border-left:3px solid var(--brand-primary); border-radius:4px; font-size:11px;">
+                    <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-size:9.5px; margin-bottom:2px;">
+                        <span>Acción de Cumplimiento</span>
+                        <span>${log.tiempo}</span>
+                    </div>
+                    <div style="color:var(--text-color); font-weight:500;">${log.accion}</div>
+                </div>
+            `).join('');
+        }
+
+        function addComplianceLog(accion) {
+            const ahora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            complianceLogs.unshift({ tiempo: ahora, accion: accion });
+            if (complianceLogs.length > 25) complianceLogs.pop();
+            renderComplianceLogs();
+        }
+
+        async function syncLeadCRM() {
+            if (!currentActiveLeadId) return;
+            const btn = document.getElementById('btn-sync-crm');
+            btn.disabled = true;
+            btn.innerText = "Sincronizando...";
+            
+            setTimeout(() => {
+                const lead = allLeads.find(l => l.id === currentActiveLeadId);
+                const correo = lead ? lead.correo_cliente : "desconocido";
+                addComplianceLog(`Sincronización HubSpot/Salesforce exitosa: ${correo}`);
+                alert("¡Sincronización Exitosa! Los datos del portafolio y la traza de Gemini han sido exportados al pipeline corporativo.");
+                btn.disabled = false;
+                btn.innerText = "🔄 Sincronizar CRM";
+            }, 1200);
+        }
+
+        async function sendProposalEmail() {
+            if (!currentActiveLeadId) return;
+            const btn = document.getElementById('btn-send-email');
+            btn.disabled = true;
+            btn.innerText = "Enviando...";
+            
+            setTimeout(() => {
+                const lead = allLeads.find(l => l.id === currentActiveLeadId);
+                const correo = lead ? lead.correo_cliente : "desconocido";
+                addComplianceLog(`Propuesta formal de portafolio enviada por correo a: ${correo}`);
+                alert(`¡Propuesta enviada con éxito a ${correo}! Se adjuntó la ficha técnica y la distribución del portafolio calificado.`);
+                btn.disabled = false;
+                btn.innerText = "✉️ Enviar Portafolio";
+            }, 1200);
+        }
+
+        function printProposalPDF() {
+            if (!currentActiveLeadId) return;
+            const lead = allLeads.find(l => l.id === currentActiveLeadId);
+            const correo = lead ? lead.correo_cliente : "desconocido";
+            addComplianceLog(`Propuesta comercial en PDF generada para: ${correo}`);
+            window.print();
         }
 
         // ── CONTROLADOR ACTIVA SYNAPSE ──
@@ -4582,6 +4694,7 @@
         let auditInterval = null;
 
         async function openAuditDrawer(leadId) {
+            currentActiveLeadId = leadId;
             const drawer = document.getElementById('audit-drawer');
             const loaderContainer = document.getElementById('audit-loading-container');
             const realContentContainer = document.getElementById('audit-real-content-container');

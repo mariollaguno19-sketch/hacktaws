@@ -172,3 +172,42 @@ test('el login de admin entrega sesión por cookie httpOnly sin exponer el token
     const lista = await leads.json();
     assert.ok(Array.isArray(lista) && lista.length > 0, 'la bandeja devuelve leads de demo');
 });
+
+// ── Integración de WhatsApp Retargeting ──
+test('el endpoint de WhatsApp requiere autenticación', async () => {
+    const res = await fetch(`${BASE}/api/leads/d1a2b3c4-0001-4a1b-9c2d-100000000001/whatsapp`);
+    assert.strictEqual(res.status, 401);
+});
+
+test('el endpoint de WhatsApp genera plantillas correctas y registra auditoría', async () => {
+    // 1. Obtener cookie de sesión de ejecutivo
+    const resLogin = await fetch(`${BASE}/api/auth/login`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usuario: 'admin', password: 'admin' })
+    });
+    const cookie = resLogin.headers.get('set-cookie').split(';')[0];
+
+    // 2. Consultar borradores de WhatsApp para el lead con teléfono
+    const leadId = 'd1a2b3c4-0001-4a1b-9c2d-100000000001';
+    const resWa = await fetch(`${BASE}/api/leads/${leadId}/whatsapp`, { headers: { Cookie: cookie } });
+    assert.strictEqual(resWa.status, 200);
+    const data = await resWa.json();
+
+    assert.ok(data.tiene_telefono, 'el lead de prueba debe tener teléfono');
+    assert.ok(data.telefono_whatsapp.startsWith('593'), 'el teléfono formateado debe incluir prefijo país');
+    assert.ok(Array.isArray(data.mensajes) && data.mensajes.length > 0, 'debe retornar un array de mensajes');
+
+    for (const m of data.mensajes) {
+        assert.ok(m.tipo, 'cada mensaje tiene un tipo (ej: primer_contacto)');
+        assert.ok(m.texto, 'cada mensaje tiene un texto precargado');
+        assert.ok(m.url_wa && m.url_wa.includes('wa.me'), 'el mensaje con teléfono debe incluir enlace wa.me');
+    }
+
+    // 3. Verificar que se haya registrado en la bitácora de auditoría
+    const resAuditoria = await fetch(`${BASE}/api/leads/${leadId}`, { headers: { Cookie: cookie } });
+    assert.strictEqual(resAuditoria.status, 200);
+    const { historial_acciones } = await resAuditoria.json();
+    const logWa = historial_acciones.find(log => log.accion === 'WHATSAPP_PREPARADO');
+    assert.ok(logWa, 'debe registrarse la acción WHATSAPP_PREPARADO en la bitácora de auditoría');
+});
+

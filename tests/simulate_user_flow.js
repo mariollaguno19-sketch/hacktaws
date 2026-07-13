@@ -149,6 +149,21 @@ async function run() {
     console.log(`  🎯 Objeción Detectada: "${analisis.objeciones_respuestas.slice(0, 100)}..."`);
     console.log('✅ Paso 4: Reporte avanzado y plantilla de email calificados.');
 
+    // ── PASO 4.5: Generación de Borradores de WhatsApp ──
+    console.log('\n💬 PASO 4.5: Generación de borradores de WhatsApp para retargeting...');
+    const resWa = await getJson(`/api/leads/${leadId}/whatsapp`);
+    if (resWa.status !== 200) {
+        console.error(`  ❌ Error al generar borradores de WhatsApp: Status ${resWa.status}`, resWa.cuerpo);
+        process.exit(1);
+    }
+    const waData = resWa.cuerpo;
+    console.log(`  📞 Teléfono de destino: ${waData.telefono_whatsapp || 'No registrado'}`);
+    console.log(`  💬 Cantidad de plantillas de retargeting: ${waData.mensajes.length}`);
+    for (const m of waData.mensajes) {
+        console.log(`    - [${m.etiqueta}]: "${m.texto.slice(0, 80)}..."`);
+    }
+    console.log('✅ Paso 4.5: Borradores de WhatsApp generados con éxito.');
+
     // ── PASO 5: Operación Comercial (Aprobación y Bitácora de Auditoría) ──
     console.log('\n⚙️ PASO 5: El Asesor aprueba la propuesta comercial para envío...');
     const accionPayload = {

@@ -2083,6 +2083,42 @@
             .syn-segmento { grid-template-columns: 1fr; gap: 8px; }
         }
 
+        /* ════════════════════════════════════════════════
+           TUTOR EDUCATIVO — quiz en el chat (Historia 2)
+           ════════════════════════════════════════════════ */
+        .syn-quiz {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(197, 248, 42, 0.25);
+            border-radius: 14px; border-bottom-left-radius: 3px;
+            padding: 16px; margin: 4px 0 12px 0; max-width: 88%;
+            animation: synPop var(--dur-med) var(--ease-smooth) both;
+        }
+        .syn-quiz .qz-fuente {
+            font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase;
+            color: var(--brand-primary); margin-bottom: 10px; font-weight: 700;
+        }
+        .syn-quiz .qz-pregunta { font-size: 14px; color: var(--text-strong); font-weight: 600; margin-bottom: 10px; line-height: 1.45; }
+        .syn-quiz .qz-progreso { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; font-family: ui-monospace, monospace; }
+        .syn-quiz button.qz-opcion {
+            display: block; width: 100%; text-align: left;
+            background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e2e8f0; padding: 10px 14px; border-radius: 9px;
+            font-size: 13.5px; font-family: inherit; cursor: pointer;
+            margin-bottom: 8px; transition: border-color var(--dur-fast) ease, background var(--dur-fast) ease;
+        }
+        .syn-quiz button.qz-opcion:hover:not(:disabled) { border-color: var(--brand-primary); background: var(--brand-primary-soft); }
+        .syn-quiz button.qz-opcion:disabled { cursor: default; opacity: 0.85; }
+        .syn-quiz button.qz-opcion.correcta { border-color: #34d399; background: rgba(5, 150, 105, 0.18); color: #a7f3d0; }
+        .syn-quiz button.qz-opcion.incorrecta { border-color: #f87171; background: rgba(220, 38, 38, 0.14); color: #fecaca; }
+        .syn-quiz .qz-feedback { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin: 6px 0 2px 0; }
+        .syn-quiz .qz-acciones { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+        .syn-quiz .qz-btn {
+            background: var(--brand-primary); color: #0a0f1a; border: none;
+            padding: 9px 18px; border-radius: 9999px; font-size: 13px; font-weight: 700;
+            font-family: inherit; cursor: pointer;
+        }
+        .syn-quiz .qz-btn.sec { background: rgba(255, 255, 255, 0.06); color: #e2e8f0; border: 1px solid rgba(255, 255, 255, 0.12); }
+
         /* ── Accesibilidad: respeta la preferencia de menos movimiento ── */
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after {
@@ -3195,9 +3231,9 @@
                         </div>
                     </details>
                     <details class="faq-item">
-                        <summary>¿Cómo activo Gemini en modo Real en lugar de Simulado?</summary>
+                        <summary>¿Cómo configuro la conexión con el motor de Google Gemini?</summary>
                         <div class="faq-content">
-                            Por diseño de seguridad, la clave API de Gemini vive únicamente en el servidor: agrega tu <code>GEMINI_API_KEY</code> de Google AI Studio en el archivo <code>.env</code> y reinicia el servidor. El sistema detecta la clave automáticamente y cambia del modo simulado al motor real de Gemini 3.5 Flash. Nunca se pide ni se acepta una API key desde el navegador.
+                            Por diseño de seguridad, la clave API de Gemini vive únicamente en el servidor: agrega tu <code>GEMINI_API_KEY</code> de Google AI Studio en el archivo <code>.env</code> y reinicia el servidor. El sistema detecta la clave automáticamente para habilitar las funciones de IA. Nunca se pide ni se acepta una API key desde el navegador.
                         </div>
                     </details>
                     <details class="faq-item">
@@ -4416,6 +4452,15 @@
             col2.className = 'lead-info-item';
             col2.appendChild(crearLinea('Resumen Necesidad:', lead.resumen_necesidad || 'Sin resumen disponible.'));
             col2.appendChild(crearLinea('Objeciones:', objeciones));
+            // Historia 3: categoría explícita de acción sugerida
+            if (lead.accion_categoria) {
+                col2.appendChild(crearLinea('Acción Recomendada:', lead.accion_categoria));
+            }
+            // Historia 2: señal educativa registrada con consentimiento
+            if (lead.tema_interes_educativo) {
+                const quizTxt = Number.isInteger(lead.quiz_puntaje) ? ` (quiz: ${lead.quiz_puntaje}/3)` : '';
+                col2.appendChild(crearLinea('Interés Educativo:', `${lead.tema_interes_educativo}${quizTxt} — consentido`));
+            }
             infoGrid.appendChild(col1);
             infoGrid.appendChild(col2);
             card.appendChild(infoGrid);
@@ -4636,28 +4681,44 @@
             syncSynapseState();
         }
 
-        function syncSynapseState() {
-            const userGeminiKey = sessionStorage.getItem('gemini_api_key');
+        async function syncSynapseState() {
             const toggleBtn = document.getElementById('synapse-toggle-btn');
             const badge = document.getElementById('synapse-status-badge');
             
-            if (userGeminiKey) {
-                if (toggleBtn) {
-                    toggleBtn.classList.add('active');
-                    toggleBtn.innerHTML = '<span class="pulse-dot"></span> Synapse Activo (Gemini)';
+            try {
+                const res = await fetch('/api/estado');
+                const estado = await res.json();
+                const motorActivo = estado.motor === 'gemini';
+                
+                if (motorActivo) {
+                    if (toggleBtn) {
+                        toggleBtn.classList.add('active');
+                        toggleBtn.innerHTML = '<span class="pulse-dot"></span> Gemini Activo';
+                        toggleBtn.title = 'Motor real de Gemini activo (configurado en el servidor)';
+                    }
+                    if (badge) {
+                        badge.className = "status-badge live";
+                        badge.textContent = "Gemini Activo (API Key)";
+                    }
+                } else {
+                    if (toggleBtn) {
+                        toggleBtn.classList.remove('active');
+                        toggleBtn.innerHTML = '<span class="pulse-dot" style="background:#f87171;"></span> Gemini Inactivo';
+                        toggleBtn.title = 'Gemini está inactivo. Configure la clave GEMINI_API_KEY en el archivo .env del servidor.';
+                    }
+                    if (badge) {
+                        badge.className = "status-badge mock";
+                        badge.textContent = "Gemini Inactivo";
+                    }
                 }
-                if (badge) {
-                    badge.className = "status-badge live";
-                    badge.textContent = "Gemini Activo (API Key)";
-                }
-            } else {
+            } catch (e) {
                 if (toggleBtn) {
                     toggleBtn.classList.remove('active');
-                    toggleBtn.innerHTML = '<span class="pulse-dot" style="background:#f87171;"></span> Activa Synapse';
+                    toggleBtn.innerHTML = '<span class="pulse-dot" style="background:#f87171;"></span> Gemini Desconectado';
                 }
                 if (badge) {
                     badge.className = "status-badge mock";
-                    badge.textContent = "Modo Simulado (Mock)";
+                    badge.textContent = "Error de Conexión";
                 }
             }
         }
@@ -4928,12 +4989,12 @@
                         if (punto) punto.style.background = '#c5f82a';
                     } else {
                         boton.classList.remove('active');
-                        boton.childNodes.forEach(n => { if (n.nodeType === 3) n.textContent = ' Modo Simulado'; });
+                        boton.childNodes.forEach(n => { if (n.nodeType === 3) n.textContent = ' Gemini Inactivo'; });
                         if (punto) punto.style.background = '#f87171';
                     }
                     boton.title = estado.motor === 'gemini'
                         ? 'Motor real de Gemini activo (configurado en el servidor)'
-                        : 'Demo con IA simulada. Para activar Gemini: agrega GEMINI_API_KEY en el .env del servidor.';
+                        : 'Gemini está inactivo. Configure la clave GEMINI_API_KEY en el archivo .env del servidor.';
                 } catch (e) { /* si el estado no responde, se deja el texto por defecto */ }
             }
             actualizarIndicadorMotor();
@@ -4945,6 +5006,176 @@
                     alert('Por seguridad, el motor de IA se configura en el servidor:\n\nAgrega tu GEMINI_API_KEY en el archivo .env y reinicia el servidor. Nunca se aceptan claves desde el navegador.');
                 };
             }
+        })();
+
+        // ════════════════════════════════════════════════
+        // TUTOR EDUCATIVO SYNAPSE (Historia de Usuario 2)
+        // Quiz de refuerzo con fuente citada + registro del
+        // tema de interés con consentimiento explícito separado.
+        // ════════════════════════════════════════════════
+        (function () {
+            // Estado educativo de la sesión (se envía a /api/evaluate solo con consentimiento)
+            window.__temaInteres = null;
+            window.__consentEducativo = false;
+            window.__quizPuntaje = null;
+
+            const QUIZ_REGEX = /\|\|QUIZ:([a-z_]+)\|\|/;
+
+            // Intercepta las respuestas del bot para detectar la invitación al quiz,
+            // sin modificar la lógica de sendMessage existente.
+            const appendOriginal = appendMessage;
+            appendMessage = function (sender, text) {
+                let temaQuiz = null;
+                if (sender === 'bot' && typeof text === 'string') {
+                    const m = text.match(QUIZ_REGEX);
+                    if (m) {
+                        temaQuiz = m[1];
+                        text = text.replace(QUIZ_REGEX, '').trim();
+                    }
+                }
+                appendOriginal(sender, text);
+                if (temaQuiz) ofrecerQuiz(temaQuiz);
+            };
+
+            function nodoQuiz() {
+                const box = document.getElementById('chat-box');
+                const typing = document.getElementById('typing-indicator');
+                const div = document.createElement('div');
+                div.className = 'syn-quiz';
+                box.insertBefore(div, typing);
+                box.scrollTop = box.scrollHeight;
+                return div;
+            }
+
+            function ofrecerQuiz(tema) {
+                const div = nodoQuiz();
+                const p = document.createElement('p');
+                p.className = 'qz-pregunta';
+                p.textContent = '¿Quieres poner a prueba lo aprendido con un quiz rápido de 3 preguntas?';
+                const acciones = document.createElement('div');
+                acciones.className = 'qz-acciones';
+                const si = document.createElement('button');
+                si.className = 'qz-btn';
+                si.textContent = 'Sí, hagamos el quiz';
+                si.addEventListener('click', () => { div.remove(); iniciarQuiz(tema); });
+                const no = document.createElement('button');
+                no.className = 'qz-btn sec';
+                no.textContent = 'Ahora no';
+                no.addEventListener('click', () => div.remove());
+                acciones.appendChild(si);
+                acciones.appendChild(no);
+                div.appendChild(p);
+                div.appendChild(acciones);
+            }
+
+            async function iniciarQuiz(tema) {
+                let quiz;
+                try {
+                    const res = await fetch(`/api/quiz/${encodeURIComponent(tema)}`);
+                    if (!res.ok) throw new Error('quiz no disponible');
+                    quiz = await res.json();
+                } catch (e) {
+                    appendOriginal('bot', 'No pude cargar el quiz en este momento, pero seguimos conversando con gusto.');
+                    return;
+                }
+                mostrarPregunta(quiz, 0, 0);
+            }
+
+            function mostrarPregunta(quiz, indice, aciertos) {
+                if (indice >= quiz.preguntas.length) {
+                    return finalizarQuiz(quiz, aciertos);
+                }
+                const q = quiz.preguntas[indice];
+                const div = nodoQuiz();
+
+                const fuente = document.createElement('div');
+                fuente.className = 'qz-fuente';
+                fuente.textContent = `Fuente: ${quiz.fuente}`;
+                const progreso = document.createElement('div');
+                progreso.className = 'qz-progreso';
+                progreso.textContent = `Pregunta ${indice + 1} de ${quiz.preguntas.length}`;
+                const pregunta = document.createElement('p');
+                pregunta.className = 'qz-pregunta';
+                pregunta.textContent = q.pregunta;
+                div.appendChild(fuente);
+                div.appendChild(progreso);
+                div.appendChild(pregunta);
+
+                const botones = [];
+                q.opciones.forEach((opcion, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'qz-opcion';
+                    btn.textContent = opcion;
+                    btn.addEventListener('click', () => {
+                        botones.forEach(b => { b.disabled = true; });
+                        const acerto = i === q.correcta;
+                        btn.classList.add(acerto ? 'correcta' : 'incorrecta');
+                        if (!acerto) botones[q.correcta].classList.add('correcta');
+                        const fb = document.createElement('p');
+                        fb.className = 'qz-feedback';
+                        fb.textContent = (acerto ? 'Correcto. ' : 'Casi. ') + q.explicacion;
+                        div.appendChild(fb);
+                        setTimeout(() => mostrarPregunta(quiz, indice + 1, aciertos + (acerto ? 1 : 0)), 1600);
+                        document.getElementById('chat-box').scrollTop = 1e9;
+                    });
+                    div.appendChild(btn);
+                    botones.push(btn);
+                });
+            }
+
+            function finalizarQuiz(quiz, aciertos) {
+                window.__quizPuntaje = aciertos;
+                appendOriginal('bot', `Terminaste el quiz de ${quiz.titulo} con ${aciertos} de ${quiz.preguntas.length} respuestas correctas. ${aciertos === 3 ? 'Excelente dominio del tema.' : 'Buen avance: el asesor puede profundizar contigo lo que falte.'}`);
+                pedirConsentimientoEducativo(quiz.titulo);
+            }
+
+            // Consentimiento explícito y SEPARADO del consentimiento general de datos
+            function pedirConsentimientoEducativo(titulo) {
+                const div = nodoQuiz();
+                const p = document.createElement('p');
+                p.className = 'qz-pregunta';
+                p.textContent = `¿Puedo registrar tu interés en ${titulo} como parte de tu perfil comercial? Así el asesor que te contacte sabrá qué tema te interesa profundizar.`;
+                const acciones = document.createElement('div');
+                acciones.className = 'qz-acciones';
+                const si = document.createElement('button');
+                si.className = 'qz-btn';
+                si.textContent = 'Sí, registrar mi interés';
+                si.addEventListener('click', () => {
+                    window.__temaInteres = titulo;
+                    window.__consentEducativo = true;
+                    div.remove();
+                    appendOriginal('bot', `Listo, registré tu interés en ${titulo} con tu autorización. Sigamos: ¿en qué más te puedo ayudar?`);
+                });
+                const no = document.createElement('button');
+                no.className = 'qz-btn sec';
+                no.textContent = 'No, gracias';
+                no.addEventListener('click', () => {
+                    window.__temaInteres = null;
+                    window.__consentEducativo = false;
+                    div.remove();
+                    appendOriginal('bot', 'Sin problema, no registraré tu interés educativo. Sigamos conversando.');
+                });
+                acciones.appendChild(si);
+                acciones.appendChild(no);
+                div.appendChild(p);
+                div.appendChild(acciones);
+            }
+
+            // Adjunta la señal educativa al perfil que viaja a /api/evaluate,
+            // sin modificar finishChat: se intercepta solo esa llamada.
+            const fetchOriginal = window.fetch;
+            window.fetch = function (url, opts) {
+                try {
+                    if (typeof url === 'string' && url.includes('/api/evaluate') && opts && typeof opts.body === 'string') {
+                        const cuerpo = JSON.parse(opts.body);
+                        cuerpo.tema_interes_educativo = window.__temaInteres;
+                        cuerpo.consentimiento_educativo = window.__consentEducativo === true;
+                        cuerpo.quiz_puntaje = window.__quizPuntaje;
+                        opts.body = JSON.stringify(cuerpo);
+                    }
+                } catch (e) { /* si el cuerpo no es JSON, se envía tal cual */ }
+                return fetchOriginal.apply(this, arguments);
+            };
         })();
     </script>
 

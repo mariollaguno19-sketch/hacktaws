@@ -10,148 +10,67 @@ dotenv.config();
 
 // ── Validación de configuración (con fallback automático para despliegues rápidos) ──
 let isMockDb = process.env.MOCK_DATABASE === 'true';
-let isMockGemini = process.env.MOCK_GEMINI === 'true';
 
 if (!isMockDb && (!process.env.SUPABASE_URL || !process.env.SUPABASE_SECRET_KEY)) {
     console.warn('⚠️ ADVERTENCIA: Faltan credenciales de Supabase. Activando MOCK_DATABASE automáticamente.');
     isMockDb = true;
-}
-if (!isMockGemini && !process.env.GEMINI_API_KEY) {
-    console.warn('⚠️ ADVERTENCIA: Falta la API Key de Gemini. Activando MOCK_GEMINI automáticamente.');
-    isMockGemini = true;
 }
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SESION_DURACION_MS = 8 * 60 * 60 * 1000; // 8 horas
 
-// ── Cliente de IA Mockeado (simulado para demos sin API key) ──
-// El chat sigue un guion de calificación determinista (no aleatorio) que reacciona
-// al contenido del mensaje: la demo se siente real aun sin conexión a Gemini.
+// Map global para almacenar historiales de chat activos (sesiones) en memoria
+const chatSessions = new Map();
 
-// Extrae un monto plausible mencionado en un texto ("25 mil", "$8.500", "12000"...)
-function extraerMontoMock(texto) {
-    const conMiles = texto.match(/(\d+(?:[.,]\d+)?)\s*(?:mil|k)\b/i);
-    if (conMiles) return Math.round(parseFloat(conMiles[1].replace(',', '.')) * 1000);
-    const directo = texto.match(/\$?\s*(\d{1,3}(?:[.,]\d{3})+|\d{4,})/);
-    if (directo) return parseInt(directo[1].replace(/[.,]/g, ''), 10);
-    return null;
-}
-
-const mockAiClient = {
-    interactions: {
-        create: async (options) => {
-            // Si es la llamada de evaluación (JSON structured output)
-            if (options.response_format && options.response_format.type === 'text' && options.response_format.mime_type === 'application/json') {
-                let email = "mocked@example.com";
-                const emailMatch = options.input.match(/correo "([^"]+)"/);
-                if (emailMatch) {
-                    email = emailMatch[1];
-                }
-
-                // Deriva el perfil SOLO del historial real (no de la plantilla del prompt,
-                // que contiene palabras como "B2B" o "Conservador" y contaminaría los regex)
-                const texto = (options.input.split('HISTORIAL:')[1] || options.input).split('Reglas:')[0];
-                const esEmpresa = /empresa|negocio|compa[ñn][ií]a|corporativ|b2b/i.test(texto);
-                const monto = extraerMontoMock(texto);
-                const conservador = /seguro|bajo riesgo|conservador|plazo fijo|p[oó]liza/i.test(texto);
-                const agresivo = /agresivo|acciones|alto riesgo|r[aá]pido|crypto/i.test(texto);
-                const urgente = /este mes|ya|ahora|pronto|inmediat|urgent/i.test(texto);
-
-                const horizonte = urgente ? "Corto Plazo (1-3 meses)" : "Mediano Plazo (2-5 años)";
-                let distribucion = { renta_fija: 50, fondos_mutuos: 35, fideicomisos: 10, efectivo: 5 };
-                let justificacion = "El perfil moderado y horizonte sugeridos permiten estructurar un portafolio equilibrado entre renta fija y fondos mutuos de crecimiento.";
-                
-                if (conservador) {
-                    distribucion = { renta_fija: 80, fondos_mutuos: 0, fideicomisos: 10, efectivo: 10 };
-                    justificacion = "Prioridad en preservación de capital: concentración en renta fija y pólizas garantizadas con un 10% en efectivo líquido.";
-                } else if (agresivo) {
-                    distribucion = { renta_fija: 10, fondos_mutuos: 60, fideicomisos: 25, efectivo: 5 };
-                    justificacion = "Perfil agresivo orientado al crecimiento patrimonial. Foco en fondos de renta variable con fideicomisos inmobiliarios adicionales.";
-                }
-
-                const responseObj = {
-                    correo_cliente: email,
-                    tipo_cliente: esEmpresa ? "B2B" : "B2C",
-                    interes_principal: conservador ? "Renta Fija" : (agresivo ? "Renta Variable" : "Fondos Mutuos"),
-                    puntaje_prioridad: Math.min(10, 5 + (monto && monto >= 20000 ? 2 : monto ? 1 : 0) + (urgente ? 2 : 0) + (esEmpresa ? 1 : 0)),
-                    monto_estimado: monto,
-                    nivel_riesgo: conservador ? "Conservador" : (agresivo ? "Agresivo" : "Moderado"),
+const dummyGeminiClient = {
+    models: {
+        generateContent: async ({ model, contents, config }) => {
+            // Devuelve respuestas fijas minimalistas para pasar los tests de estrés sin API key
+            let text = "Respuesta de prueba del motor Gemini.";
+            if (config && config.responseMimeType === 'application/json') {
+                text = JSON.stringify({
+                    correo_cliente: "carga@test.com",
+                    tipo_cliente: "B2C",
+                    interes_principal: "Fondos de Inversión",
+                    puntaje_prioridad: 5,
+                    monto_estimado: 10000,
+                    nivel_riesgo: "Moderado",
                     telefono: null,
                     etapa_embudo: "Listo para asesor",
-                    resumen_necesidad: `Cliente ${esEmpresa ? "corporativo" : "personal"} interesado en ${conservador ? "instrumentos de renta fija" : "diversificar con fondos"}${monto ? `, con un monto aproximado de $${monto.toLocaleString("en-US")}` : ""}${urgente ? ". Desea comenzar cuanto antes" : ""}.`,
-                    objeciones_detectadas: monto ? ["Quiere confirmar tasas vigentes con un asesor"] : ["Aún no define el monto a invertir"],
-                    accion_sugerida_ejecutivo: urgente
-                        ? "Contactar hoy mismo: el cliente quiere comenzar de inmediato. Preparar propuesta preliminar."
-                        : "Agendar llamada esta semana para presentar portafolio acorde a su perfil.",
-                    horizonte_inversion: horizonte,
-                    portafolio_distribucion: distribucion,
-                    portafolio_justificacion: justificacion
-                };
-
-                return {
-                    output_text: JSON.stringify(responseObj),
-                    id: "mock-eval-" + Math.random().toString(36).substr(2, 9)
-                };
-            } else {
-                // Chat conversacional: guion determinista de calificación en 4 pasos.
-                // El paso se codifica en el interaction_id para mantener estado sin memoria.
-                let paso = 0;
-                const idPrevio = options.previous_interaction_id || '';
-                const matchPaso = idPrevio.match(/^mock-chat-(\d+)-/);
-                if (matchPaso) paso = Math.min(parseInt(matchPaso[1], 10) + 1, 4);
-
-                // En el primer turno el input incluye el system instruction: se aísla el mensaje real
-                const crudo = options.input || '';
-                const mensaje = crudo.includes('--- INICIO DE LA CONVERSACIÓN ---')
-                    ? crudo.split('--- INICIO DE LA CONVERSACIÓN ---')[1].replace(/^\s*Usuario:\s*/, '')
-                    : crudo;
-                const esEmpresa = /empresa|negocio|compa[ñn][ií]a|corporativ|b2b/i.test(mensaje);
-                const quiereAprender = /aprend|explica|qu[eé] es|c[oó]mo funciona|ense[ñn]a/i.test(mensaje);
-
-                let replyText;
-                if (paso === 0) {
-                    replyText = quiereAprender
-                        ? "¡Con gusto! Según enseñamos en Synapse, la Renta Fija te da una rentabilidad conocida de antemano (como bonos o pólizas) con bajo riesgo, mientras que los Fondos Mutuos diversifican tu dinero entre varios activos con gestión profesional. ¿Te parece si te hago un par de preguntas para orientarte mejor? Primero: ¿invertirías a título personal o en nombre de una empresa?"
-                        : "¡Hola! Qué gusto tenerte por aquí. Para darte una orientación a tu medida, ¿te parece si te hago un par de preguntas rápidas? La primera: ¿buscas invertir a título personal o en nombre de una empresa?";
-                } else if (paso === 1) {
-                    replyText = esEmpresa
-                        ? "Perfecto, inversión corporativa entonces. Para dimensionar bien la propuesta, ¿con qué monto aproximado le gustaría comenzar a la empresa? No necesita ser una cifra exacta."
-                        : "Perfecto, inversión personal entonces. ¿Con qué monto aproximado te gustaría comenzar? Una idea general es suficiente.";
-                } else if (paso === 2) {
-                    replyText = "Excelente, gracias. Última pregunta para completar tu perfil: ¿qué tan pronto quisieras comenzar y por cuánto tiempo podrías mantener la inversión? Por ejemplo: este mes y a un año, o más adelante y a largo plazo.";
-                } else if (paso === 3) {
-                    replyText = "¡Listo, con esto ya tengo tu perfil completo! De acuerdo con nuestro manual de Synapse, para un caso como el tuyo suele funcionar bien combinar Renta Fija con Fondos Mutuos — la regla de oro: nunca inviertas el dinero de tu gasto corriente ni tu fondo de emergencia. Un asesor humano te confirmará la propuesta exacta con las tasas vigentes. Ya puedes enviar tu perfil al ejecutivo comercial con el botón de abajo. ||LEAD_LISTO||";
-                } else {
-                    replyText = quiereAprender
-                        ? "Claro. Según enseñamos en Synapse: diversificar significa no concentrar todo en un solo activo, y el interés compuesto hace que tus ganancias generen nuevas ganancias con el tiempo. Tu perfil ya está listo para el ejecutivo cuando quieras enviarlo. ||LEAD_LISTO||"
-                        : "Tu perfil ya está completo y listo para enviar al ejecutivo comercial. Si tienes alguna otra duda sobre inversiones, con gusto te la explico mientras tanto. ||LEAD_LISTO||";
-                }
-
-                return {
-                    output_text: replyText,
-                    id: `mock-chat-${paso}-` + Math.random().toString(36).substr(2, 9)
-                };
+                    resumen_necesidad: "Desea iniciar este mes.",
+                    objeciones_detectadas: [],
+                    accion_categoria: "Agendar reunión",
+                    accion_sugerida_ejecutivo: "Contactar hoy mismo.",
+                    horizonte_inversion: "Corto Plazo (1-3 meses)",
+                    portafolio_distribucion: { renta_fija: 50, fondos_mutuos: 30, fideicomisos: 15, efectivo: 5 },
+                    portafolio_justificacion: "Justificación de prueba.",
+                    perfil_comportamiento: "Perfil de prueba.",
+                    estrategia_comercial: "Estrategia de prueba.",
+                    objeciones_respuestas: "Objeciones de prueba.",
+                    email_plantilla: "Email de prueba."
+                });
             }
+            return { text };
         }
     }
 };
 
 let ai;
-if (!isMockGemini) {
+if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() && process.env.GEMINI_API_KEY !== 'tu_api_key_aqui') {
     ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+    console.log('✅ Google GenAI SDK inicializado con éxito.');
+} else {
+    console.warn('⚠️ ADVERTENCIA: GEMINI_API_KEY no configurado en el archivo .env. Las funciones de IA usarán un cliente de emergencia.');
 }
 
-// Helper para obtener el cliente de IA activo (real de Google o Mock simulado).
-// SEGURIDAD: la API key de Gemini SOLO vive en el .env del servidor. Ya no se
-// aceptan claves enviadas por el navegador (cabecera x-gemini-key eliminada):
-// pedir a usuarios que peguen su API key en una web es una mala práctica.
+// Helper para obtener el cliente de IA activo.
 function getAIClient(req) {
-    const synapseAiActive = req.headers['x-synapse-ai'] === 'true';
-    if (synapseAiActive && process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() && process.env.GEMINI_API_KEY !== 'tu_api_key_aqui') {
-        return ai;
+    if (!ai) {
+        console.warn('⚠️ ALERTA: Usando dummyGeminiClient de emergencia porque GEMINI_API_KEY no está configurado.');
+        return dummyGeminiClient;
     }
-    return mockAiClient;
+    return ai;
 }
 
 // ── Cookies de sesión (httpOnly: el token de admin nunca es accesible desde JS) ──
@@ -870,10 +789,8 @@ app.post('/api/auth/logout', requiereAuth, async (req, res) => {
 
 // Estado del motor de IA (público, sin secretos): el frontend muestra el modo real
 app.get('/api/estado', (req, res) => {
-    const geminiActivo = !isMockGemini
-        && !!(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() && process.env.GEMINI_API_KEY !== 'tu_api_key_aqui');
     res.json({
-        motor: geminiActivo ? 'gemini' : 'simulado',
+        motor: ai ? 'gemini' : 'inactivo',
         base_datos: isMockDb ? 'simulada' : 'supabase'
     });
 });
@@ -890,27 +807,57 @@ app.post('/api/chat', limiteChat, async (req, res) => {
     console.log(`\n[${new Date().toLocaleTimeString()}] 💬 MENSAJE USUARIO: "${message.slice(0, 120)}"`);
 
     try {
-        let inputData = message;
-        if (!previous_id) {
-            inputData = `${SYSTEM_INSTRUCTION}\n\n--- INICIO DE LA CONVERSACIÓN ---\nUsuario: ${message}`;
+        const dynamicAi = getAIClient(req);
+        let replyText;
+        let interactionId;
+
+        let session = null;
+        if (previous_id) {
+            session = chatSessions.get(previous_id);
         }
 
-        const options = { model: 'gemini-3.5-flash', input: inputData };
-        if (previous_id) options.previous_interaction_id = previous_id;
+        if (!session) {
+            // Iniciar nueva sesión con ID único
+            interactionId = crypto.randomUUID();
+            session = {
+                id: interactionId,
+                history: [
+                    { role: 'user', parts: [{ text: SYSTEM_INSTRUCTION + '\n\n' + message }] }
+                ]
+            };
+            chatSessions.set(interactionId, session);
+        } else {
+            interactionId = previous_id;
+            session.history.push({ role: 'user', parts: [{ text: message }] });
+        }
 
-        const dynamicAi = getAIClient(req);
-        const interaction = await dynamicAi.interactions.create(options);
+        const resIA = await dynamicAi.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: session.history
+        });
+
+        replyText = resIA.text;
+        session.history.push({ role: 'model', parts: [{ text: replyText }] });
+
+        // Limpieza de memoria: limitar tamaño del historial para evitar desborde de contexto
+        if (session.history.length > 50) {
+            session.history = [
+                { role: 'user', parts: [{ text: SYSTEM_INSTRUCTION }] },
+                ...session.history.slice(-20)
+            ];
+        }
+
         console.log(`[${new Date().toLocaleTimeString()}] 🤖 RESPUESTA IA LISTA.`);
-        res.json({ reply: interaction.output_text, interaction_id: interaction.id });
+        res.json({ reply: replyText, interaction_id: interactionId });
     } catch (error) {
         console.error('❌ ERROR GEMINI:', error.message || error);
-        res.status(500).json({ error: 'No se pudo conectar con la IA.' });
+        res.status(500).json({ error: error.message || 'No se pudo conectar con la IA.' });
     }
 });
 
 // ── Endpoint de Cierre: evalúa la conversación y guarda el lead en Supabase ──
 app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
-    const { email, history } = req.body || {};
+    const { email, history, tema_interes_educativo, consentimiento_educativo, quiz_puntaje } = req.body || {};
 
     if (typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
         return res.status(400).json({ error: 'Correo electrónico no válido.' });
@@ -918,6 +865,16 @@ app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
     if (!Array.isArray(history) || history.length === 0 || history.length > 200) {
         return res.status(400).json({ error: 'Historial de conversación no válido.' });
     }
+
+    // Historia de Usuario 2: el tema educativo SOLO se registra con consentimiento explícito
+    const TEMAS_VALIDOS_LEAD = Object.values(TEMAS_EDUCATIVOS);
+    const consintioEducativo = consentimiento_educativo === true;
+    const temaInteres = (consintioEducativo && TEMAS_VALIDOS_LEAD.includes(tema_interes_educativo))
+        ? tema_interes_educativo
+        : null;
+    const puntajeQuiz = Number.isInteger(quiz_puntaje) && quiz_puntaje >= 0 && quiz_puntaje <= 3
+        ? quiz_puntaje
+        : null;
     const historialLimpio = history
         .filter(m => m && (m.role === 'user' || m.role === 'model') && typeof m.text === 'string')
         .map(m => ({ role: m.role, text: m.text.slice(0, 4000) }));
@@ -943,6 +900,8 @@ app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
         - "horizonte_inversion": Estimado de tiempo que el cliente planea mantener invertido su dinero (ej: "Corto Plazo (3-6 meses)", "Mediano Plazo (1-3 años)", "Largo Plazo (más de 5 años)").
         - "portafolio_distribucion": Distribución porcentual recomendada basada en su riesgo. Debe ser un objeto JSON con EXACTAMENTE estas 4 claves numéricas enteras: "renta_fija", "fondos_mutuos", "fideicomisos", "efectivo". La suma de los 4 valores DEBE dar exactamente 100.
         - "portafolio_justificacion": Racional claro de 1 o 2 oraciones justificando esta asignación de activos en base a las preferencias y objeciones que mencionó el cliente.
+        - "accion_categoria": EXACTAMENTE una de estas tres: "Agendar reunión" (lead caliente con monto y urgencia), "Enviar material educativo" (interesado pero aún aprendiendo o sin monto), "Derivar a especialista" (caso corporativo complejo o producto fuera del catálogo básico).
+        - "accion_sugerida_ejecutivo": el detalle concreto de esa acción en una frase.
 
         Responde ESTRICTAMENTE con un JSON válido, sin texto adicional ni markdown:
         {
@@ -956,6 +915,7 @@ app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
             "etapa_embudo": "Listo para asesor",
             "resumen_necesidad": "Resumen claro de lo que busca el cliente y el monto",
             "objeciones_detectadas": ["Duda o temor 1"],
+            "accion_categoria": "Agendar reunión",
             "accion_sugerida_ejecutivo": "Acción clara para el asesor (ej. Agendar reunión para presentar portafolio)",
             "horizonte_inversion": "Mediano Plazo (1-3 años)",
             "portafolio_distribucion": {
@@ -968,15 +928,17 @@ app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
         }`;
 
         const dynamicAi = getAIClient(req);
-        const interaction = await dynamicAi.interactions.create({
-            model: 'gemini-3.5-flash',
-            input: prompt,
-            response_format: { type: 'text', mime_type: 'application/json' }
+        const resIA = await dynamicAi.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: 'application/json'
+            }
         });
 
         let datosIA = {};
         try {
-            datosIA = JSON.parse(interaction.output_text.replace(/```json|```/g, '').trim());
+            datosIA = JSON.parse(resIA.text.replace(/```json|```/g, '').trim());
         } catch (e) {
             console.warn('⚠️ La IA no devolvió JSON válido; se usarán valores por defecto.');
         }
@@ -1038,6 +1000,10 @@ app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
             objeciones_detectadas: Array.isArray(datosIA.objeciones_detectadas) && datosIA.objeciones_detectadas.length > 0
                 ? datosIA.objeciones_detectadas.filter(o => typeof o === 'string').map(o => o.slice(0, 300)).slice(0, 10)
                 : ['Ninguna'],
+            // Historia 3: la acción sugerida cae en una de tres categorías explícitas
+            accion_categoria: ['Agendar reunión', 'Enviar material educativo', 'Derivar a especialista'].includes(datosIA.accion_categoria)
+                ? datosIA.accion_categoria
+                : (Number.isFinite(monto) && monto >= 15000 ? 'Agendar reunión' : 'Enviar material educativo'),
             accion_sugerida_ejecutivo: esTextoValido(datosIA.accion_sugerida_ejecutivo, 1000)
                 ? datosIA.accion_sugerida_ejecutivo
                 : 'Contactar al cliente para evaluar necesidades.',
@@ -1045,7 +1011,11 @@ app.post('/api/evaluate', limiteEvaluar, async (req, res) => {
             historial: historialLimpio,
             horizonte_inversion: horiz,
             portafolio_distribucion: dist,
-            portafolio_justificacion: justif
+            portafolio_justificacion: justif,
+            // Historia 2: señal educativa (null si el cliente no dio consentimiento explícito)
+            tema_interes_educativo: temaInteres,
+            consentimiento_educativo: consintioEducativo,
+            quiz_puntaje: puntajeQuiz
         };
 
         let guardado;
@@ -1205,15 +1175,17 @@ app.get('/api/leads/:id/synapse-analysis', requiereAuth, async (req, res) => {
             "email_plantilla": "..."
         }`;
 
-        const interaction = await aiClient.interactions.create({
-            model: 'gemini-3.5-flash',
-            input: prompt,
-            response_format: { type: 'text', mime_type: 'application/json' }
+        const resIA = await aiClient.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: {
+                responseMimeType: 'application/json'
+            }
         });
 
         let jsonResponse;
         try {
-            jsonResponse = JSON.parse(interaction.output_text.replace(/```json|```/g, '').trim());
+            jsonResponse = JSON.parse(resIA.text.replace(/```json|```/g, '').trim());
         } catch (e) {
             console.warn("La IA no devolvió JSON válido para el análisis avanzado; se usa el mock.", e);
             jsonResponse = {

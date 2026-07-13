@@ -1334,9 +1334,8 @@ if (!isMockDb && !process.env.VERCEL) {
     }, 60 * 60 * 1000).unref();
 }
 
-if (process.env.VERCEL) {
-    module.exports = app;
-} else {
+// ── Arranque condicional: Solo escucha puertos si se ejecuta directamente (No en Tests ni en Vercel) ──
+if (require.main === module && !process.env.VERCEL) {
     const BACKLOG = 1024; // cola de conexiones pendientes mayor al default (511) para ráfagas
     const servidor = app.listen(PORT, BACKLOG, () => {
         console.log(`🚀 SERVIDOR CORRIENDO EN: http://localhost:${PORT}`);
@@ -1362,3 +1361,5 @@ if (process.env.VERCEL) {
     process.on('SIGTERM', () => apagar('SIGTERM'));
     process.on('SIGINT', () => apagar('SIGINT'));
 }
+
+module.exports = app;

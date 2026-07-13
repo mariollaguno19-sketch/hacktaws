@@ -122,3 +122,26 @@ Se ejecutaron pruebas sistemáticas manuales y automáticas sobre el flujo de ex
    ```
 
 5. **Acceso al CRM:** El usuario ejecutivo se administra en la tabla `usuarios_admin` de Supabase (contraseña hasheada con bcrypt; nunca en texto plano ni en el código).
+
+## Calidad, Confiabilidad y Testing Automatizado
+
+Para garantizar la resiliencia del software en un entorno bancario real y cumplir con los estándares técnicos más exigentes, el proyecto implementa una suite de pruebas automatizadas utilizando **Jest** y **Supertest**, cubriendo dos niveles estructurales de la arquitectura:
+
+### 1. Nivel Intermedio: Pruebas Unitarias de Lógica Crítica (`tests/unit.test.js`)
+Se modularizaron y evaluaron de forma aislada las funciones financieras y regulatorias clave (ubicadas en `utils/validators.js`), garantizando cero fallos lógicos en la captación:
+* **Validación de Identificación Ecuatoriana:** Verificación algorítmica estricta de Cédulas de Ciudadanía (10 dígitos) y RUCs corporativos (13 dígitos con sufijo `001`), rechazando automáticamente códigos de provincia inexistentes o formatos malformados.
+* **Sanitización de Correos:** Validación de integridad y formato de emails corporativos para evitar inyecciones en la base de datos del CRM.
+
+### 2. Nivel Básico: Pruebas de Integración Agéntica y Mocks (`tests/agent.test.js`)
+Se inspeccionó el comportamiento del servidor Express y del Agente Conversacional sin depender de la latencia o disponibilidad de internet, implementando variables de entorno de aislamiento (`MOCK_GEMINI=true` y `MOCK_DATABASE=true`):
+* **Coherencia Conversacional (`POST /api/chat`):** Se verifica que el agente en Node.js procese mensajes en lenguaje natural, responda al contexto (ej. inversiones B2B en Renta Fija) y mantenga la continuidad de la sesión.
+* **Generación Estructurada de JSON (`POST /api/evaluate`):** Se evalúa la capacidad del sistema para consumir el historial del chat y retornar un objeto JSON estricto y tipado con el perfil de riesgo, monto estimado y la acción sugerida para el ejecutivo.
+* **Protección de Endpoints (`POST /api/auth/login`):** Validación de rechazo (`401 Unauthorized`) ante intentos de acceso no autorizados a la bandeja de administración del CRM.
+
+### Cómo ejecutar la suite de pruebas en local
+Cualquier evaluador puede verificar la integridad del código en menos de 3 segundos ejecutando el siguiente comando desde la raíz del proyecto:
+
+\`\`\`bash
+MOCK_DATABASE=true MOCK_GEMINI=true npm test
+\`\`\`
+*(Nota: Si no se cuenta con Jest instalado globalmente, se puede ejecutar mediante: `MOCK_DATABASE=true MOCK_GEMINI=true npx jest --forceExit --detectOpenHandles`).*

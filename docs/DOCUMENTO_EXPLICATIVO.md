@@ -14,7 +14,7 @@ Cobertura de las tres Historias de Usuario:
 |---|---|---|
 | **H1 — Captación conversacional** | Conversar en lenguaje natural y capturar el perfil comercial | Agente "Synapse" (Gemini 2.5 Flash) con guion de calificación: B2B/B2C, monto, riesgo, horizonte y urgencia. Señal `\|\|LEAD_LISTO\|\|` desbloquea el envío al CRM |
 | **H2 — Tutor IA (educación → intención)** | Educar con fuente citada y convertir el interés en señal comercial | Tutor con base de conocimiento controlada que **cita la fuente en cada respuesta** ("Fuente: Guía Educativa Synapse — [sección]"), ofrece un **quiz de 3 preguntas** con feedback inmediato, y registra el **tema de interés** en el CRM **solo con consentimiento explícito separado** |
-| **H3 — Gestión ejecutiva** | Priorizar leads y sugerir la siguiente acción | Bandeja con prioridad 1-10, pipeline en dólares y **acción sugerida en una de tres categorías**: Agendar reunión / Enviar material educativo / Derivar a especialista |
+| **H3 — Gestión ejecutiva** | Priorizar leads y sugerir la siguiente acción | Bandeja con prioridad 1-10, pipeline en dólares, **acción sugerida en tres categorías** (Agendar reunión / Enviar material educativo / Derivar a especialista) y **canal de retargeting WhatsApp** (generación de borradores y enlace directo `wa.me` para contacto human-in-the-loop) |
 
 ## 2. Tipo de negocio al que aplica
 
@@ -58,7 +58,8 @@ Cobertura de las tres Historias de Usuario:
 
 1. **Canal omnicanal:** el chat se embebe vía webhook/iframe en banca web, app móvil o WhatsApp Business (el mismo backend REST sirve cualquier canal).
 2. **CRM enterprise:** `/api/evaluate` produce un JSON normalizado y tipado (validado contra restricciones de la BD) que mapea 1:1 a objetos Lead de **Salesforce Financial Services, HubSpot o Microsoft Dynamics** vía conectores REST estándar.
-3. **Cumplimiento:** human-in-the-loop obligatorio (aprobación explícita antes de cualquier comunicación), disclaimer legal visible en el chat, consentimientos separados (datos generales vs. interés educativo, ambos registrados), y traza auditable de cada acción del ejecutivo (`historial_acciones`).
+3. **Retargeting de WhatsApp (Human-in-the-Loop):** Generador inteligente de mensajes personalizados de seguimiento (Contacto, Envío de Portafolio, Reactivación) con enlace directo (`wa.me`) para contacto en un solo clic. El envío final siempre queda bajo criterio del asesor, registrando cada preparación en la bitácora de auditoría.
+4. **Cumplimiento:** human-in-the-loop obligatorio (aprobación explícita antes de cualquier comunicación), disclaimer legal visible en el chat, consentimientos separados (datos generales vs. interés educativo, ambos registrados), y traza auditable de cada acción del ejecutivo (`historial_acciones`).
 
 ## 5. Seguridad (resumen para jurado técnico)
 
@@ -70,4 +71,4 @@ Cobertura de las tres Historias de Usuario:
 
 ## 6. Evidencia de calidad
 
-`MOCK_DATABASE=true MOCK_GEMINI=true npm test` → **16/16**: 7 pruebas Jest (unitarias de validadores + integración) y 9 pruebas end-to-end de las Historias de Usuario (node --test), incluyendo: fuente citada, quiz de 3 preguntas, consentimiento educativo (positivo y negativo), categorías de acción, y seguridad de sesión.
+`MOCK_DATABASE=true MOCK_GEMINI=true npm test` → **18/18**: 7 pruebas Jest (unitarias de validadores + integración) y 11 pruebas end-to-end de las Historias de Usuario (node --test), incluyendo: fuente citada, quiz de 3 preguntas, consentimiento educativo (positivo y negativo), categorías de acción, seguridad de sesión, y **borradores de WhatsApp con auditoría**.

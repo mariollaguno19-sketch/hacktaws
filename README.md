@@ -138,10 +138,33 @@ Se inspeccionó el comportamiento del servidor Express y del Agente Conversacion
 * **Generación Estructurada de JSON (`POST /api/evaluate`):** Se evalúa la capacidad del sistema para consumir el historial del chat y retornar un objeto JSON estricto y tipado con el perfil de riesgo, monto estimado y la acción sugerida para el ejecutivo.
 * **Protección de Endpoints (`POST /api/auth/login`):** Validación de rechazo (`401 Unauthorized`) ante intentos de acceso no autorizados a la bandeja de administración del CRM.
 
-### Cómo ejecutar la suite de pruebas en local
-Cualquier evaluador puede verificar la integridad del código en menos de 3 segundos ejecutando el siguiente comando desde la raíz del proyecto:
+### 3. Suite de Historias de Usuario del Track (`tests/test_agent.test.js`)
+Con el runner nativo de Node (`node --test`, sin dependencias), 9 pruebas end-to-end validan el cumplimiento de las tres Historias de Usuario del Track 1 levantando el servidor real en modo simulado:
+* **Historia 1:** el agente responde coherente a un saludo, mantiene el hilo con `previous_id` y emite `||LEAD_LISTO||` al calificar.
+* **Historia 2 (Tutor IA):** una pregunta educativa recibe respuesta **con fuente citada** ("Fuente: Guía Educativa Synapse — …") e invitación al **quiz de 3 preguntas** del banco controlado; y el **tema de interés solo se registra con consentimiento explícito** (sin consentimiento, el campo queda vacío aunque venga en el payload).
+* **Historia 3:** la acción sugerida cae siempre en una de las tres categorías del track: **Agendar reunión / Enviar material educativo / Derivar a especialista**.
+* **Seguridad:** la bandeja exige sesión (401) y el login entrega la sesión por **cookie httpOnly sin exponer el token en el cuerpo**.
 
-\`\`\`bash
+### Cómo ejecutar las suites en local
+
+```bash
+# Todo (Jest + node:test), sin claves reales:
 MOCK_DATABASE=true MOCK_GEMINI=true npm test
-\`\`\`
-*(Nota: Si no se cuenta con Jest instalado globalmente, se puede ejecutar mediante: `MOCK_DATABASE=true MOCK_GEMINI=true npx jest --forceExit --detectOpenHandles`).*
+
+# Solo una de las suites:
+npm run test:jest      # unitarias + integración (Jest/Supertest)
+npm run test:agente    # historias de usuario end-to-end (node --test)
+```
+
+Resultado esperado: **7 passed (Jest) + 9 pass (node:test) = 16/16**.
+
+### Casos probados manualmente (evidencia adicional)
+
+| Caso | Input | Resultado esperado | Resultado |
+|---|---|---|---|
+| Chat educativo | "Quiero aprender qué es la renta fija" | Respuesta con "Fuente: Guía Educativa Synapse — Renta Fija" + oferta de quiz | ✅ |
+| Quiz completo | 3 respuestas en el chat | Feedback inmediato por pregunta + puntaje final | ✅ |
+| Consentimiento educativo | "Sí, registrar mi interés" | El lead llega al CRM con "Interés Educativo: Renta Fija (quiz: n/3) — consentido" | ✅ |
+| Rechazo de consentimiento | "No, gracias" | El lead llega SIN tema educativo | ✅ |
+| Calificación completa | personal → 20 mil → este mes | Botón "Transmitir perfil" desbloqueado + lead con categoría de acción | ✅ |
+| Human-in-the-loop | Aprobar/Editar/Rechazar en la bandeja | Estado actualizado + traza en `historial_acciones` | ✅ |

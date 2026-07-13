@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node --test tests/test_agent.test.js"
+    "test": "jest --forceExit --detectOpenHandles --testPathIgnorePatterns=test_agent stress_test && node --test tests/test_agent.test.js",
+    "test:jest": "jest --forceExit --detectOpenHandles --testPathIgnorePatterns=test_agent stress_test",
+    "test:agente": "node --test tests/test_agent.test.js"
   },
   "keywords": [
     "gemini",

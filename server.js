@@ -23,12 +23,104 @@ const SESION_DURACION_MS = 8 * 60 * 60 * 1000; // 8 horas
 // Map global para almacenar historiales de chat activos (sesiones) en memoria
 const chatSessions = new Map();
 
+// Cliente simulado: replica el comportamiento del agente real sin API key.
+// El chat sigue un guion de calificación determinista (Historia 1), cita la fuente
+// educativa e invita al quiz (Historia 2), y la evaluación deriva el perfil de lo
+// que el usuario realmente dijo (Historia 3 con categorías explícitas).
+function extraerMontoDemo(texto) {
+    const conMiles = texto.match(/(\d+(?:[.,]\d+)?)\s*(?:mil|k)\b/i);
+    if (conMiles) return Math.round(parseFloat(conMiles[1].replace(',', '.')) * 1000);
+    const directo = texto.match(/\$?\s*(\d{1,3}(?:[.,]\d{3})+|\d{4,})/);
+    if (directo) return parseInt(directo[1].replace(/[.,]/g, ''), 10);
+    return null;
+}
+
 const dummyGeminiClient = {
     models: {
         generateContent: async ({ model, contents, config }) => {
-            // Devuelve respuestas fijas minimalistas para pasar los tests de estrés sin API key
+            // ── Rama de CHAT conversacional (guion determinista de 4 pasos) ──
             let text = "Respuesta de prueba del motor Gemini.";
-            if (config && config.responseMimeType === 'application/json') {
+            const esJson = config && config.responseMimeType === 'application/json';
+
+            if (!esJson && Array.isArray(contents)) {
+                const turnosUsuario = contents.filter(c => c.role === 'user');
+                const paso = Math.min(turnosUsuario.length - 1, 4);
+                let mensaje = turnosUsuario.length
+                    ? (turnosUsuario[turnosUsuario.length - 1].parts?.[0]?.text || '')
+                    : '';
+                // El primer turno incluye el system instruction: se aísla el mensaje real
+                if (mensaje.includes('DESBLOQUEO DEL CRM')) {
+                    mensaje = mensaje.split('\n').slice(-1)[0] || mensaje;
+                }
+                const esEmpresa = /empresa|negocio|compa[ñn][ií]a|corporativ|b2b/i.test(mensaje);
+                const quiereAprender = /aprend|expl[ií]ca|qu[eé] (es|son)|c[oó]mo funciona|ense[ñn]a|h[aá]blame de|no s[eé] nada/i.test(mensaje);
+                let tema = 'renta_fija';
+                if (/fondo/i.test(mensaje)) tema = 'fondos_mutuos';
+                else if (/acci[oó]n|variable|bolsa/i.test(mensaje)) tema = 'renta_variable';
+                else if (/riesgo|perfil/i.test(mensaje)) tema = 'perfiles_riesgo';
+                else if (/regla|emergencia/i.test(mensaje)) tema = 'reglas_oro';
+                else if (/diversif|inter[eé]s compuesto|liquidez|horizonte/i.test(mensaje)) tema = 'conceptos_clave';
+                const NOMBRES = { renta_fija: 'Renta Fija', fondos_mutuos: 'Fondos Mutuos', renta_variable: 'Renta Variable', perfiles_riesgo: 'Perfiles de Riesgo', reglas_oro: 'Reglas de Oro', conceptos_clave: 'Conceptos Clave' };
+
+                if (quiereAprender) {
+                    text = `¡Con gusto! La Renta Fija te da una rentabilidad conocida de antemano (bonos, pólizas, plazo fijo) con bajo riesgo, mientras que los Fondos Mutuos diversifican tu dinero con gestión profesional.\n\nFuente: Guía Educativa Synapse — ${NOMBRES[tema]}\n¿Te parece si te hago un par de preguntas para orientarte mejor? ¿Invertirías a título personal o en nombre de una empresa? ||QUIZ:${tema}||`;
+                } else if (paso === 0) {
+                    text = "¡Hola! Qué gusto tenerte por aquí. Para darte una orientación a tu medida, ¿te parece si te hago un par de preguntas rápidas? La primera: ¿buscas invertir a título personal o en nombre de una empresa?";
+                } else if (paso === 1) {
+                    text = esEmpresa
+                        ? "Perfecto, inversión corporativa. Para dimensionar bien la propuesta, ¿con qué monto aproximado le gustaría comenzar a la empresa?"
+                        : "Perfecto, inversión personal. ¿Con qué monto aproximado te gustaría comenzar? Una idea general es suficiente.";
+                } else if (paso === 2) {
+                    text = "Excelente, gracias. Última pregunta: ¿qué tan pronto quisieras comenzar y por cuánto tiempo podrías mantener la inversión?";
+                } else {
+                    text = "¡Listo, con esto ya tengo tu perfil completo! La regla de oro: nunca inviertas el dinero de tu gasto corriente ni tu fondo de emergencia. Un asesor humano te confirmará la propuesta con las tasas vigentes. Ya puedes enviar tu perfil al ejecutivo comercial. ||LEAD_LISTO||";
+                }
+                return { text };
+            }
+
+            // ── Rama JSON (evaluación de lead y auditoría): deriva del contenido real ──
+            const textoCompleto = Array.isArray(contents)
+                ? contents.map(c => c.parts?.map(p => p.text).join(' ') || '').join(' ')
+                : String(contents || '');
+            const historial = (textoCompleto.split('HISTORIAL:')[1] || textoCompleto).split('Reglas:')[0];
+            const esEmpresaJ = /empresa|negocio|corporativ|b2b/i.test(historial);
+            const montoJ = extraerMontoDemo(historial);
+            const conservadorJ = /seguro|bajo riesgo|conservador|plazo fijo|p[oó]liza/i.test(historial);
+            const agresivoJ = /agresivo|acciones|alto riesgo|bolsa/i.test(historial);
+            const urgenteJ = /este mes|ya|ahora|pronto|inmediat|urgent/i.test(historial);
+
+            if (esJson) {
+                text = JSON.stringify({
+                    correo_cliente: (textoCompleto.match(/correo "([^"]+)"/) || [])[1] || "demo@synapse.ec",
+                    tipo_cliente: esEmpresaJ ? "B2B" : "B2C",
+                    interes_principal: conservadorJ ? "Renta Fija" : (agresivoJ ? "Renta Variable" : "Fondos Mutuos"),
+                    puntaje_prioridad: Math.min(10, 5 + (montoJ && montoJ >= 20000 ? 2 : montoJ ? 1 : 0) + (urgenteJ ? 2 : 0) + (esEmpresaJ ? 1 : 0)),
+                    monto_estimado: montoJ,
+                    nivel_riesgo: conservadorJ ? "Conservador" : (agresivoJ ? "Agresivo" : "Moderado"),
+                    telefono: null,
+                    etapa_embudo: "Listo para asesor",
+                    resumen_necesidad: `Cliente ${esEmpresaJ ? "corporativo" : "personal"}${montoJ ? ` con monto aproximado de $${montoJ.toLocaleString("en-US")}` : ""}${urgenteJ ? ", desea comenzar cuanto antes" : ""}.`,
+                    objeciones_detectadas: montoJ ? ["Quiere confirmar tasas vigentes con un asesor"] : ["Aún no define el monto a invertir"],
+                    accion_categoria: (esEmpresaJ && montoJ && montoJ >= 50000)
+                        ? "Derivar a especialista"
+                        : (montoJ && (urgenteJ || montoJ >= 15000) ? "Agendar reunión" : "Enviar material educativo"),
+                    accion_sugerida_ejecutivo: urgenteJ
+                        ? "Contactar hoy mismo: el cliente quiere comenzar de inmediato."
+                        : "Agendar llamada esta semana para presentar el portafolio acorde a su perfil.",
+                    horizonte_inversion: urgenteJ ? "Corto Plazo (1-3 meses)" : "Mediano Plazo (1-3 años)",
+                    portafolio_distribucion: conservadorJ
+                        ? { renta_fija: 80, fondos_mutuos: 0, fideicomisos: 10, efectivo: 10 }
+                        : (agresivoJ ? { renta_fija: 10, fondos_mutuos: 60, fideicomisos: 25, efectivo: 5 }
+                                     : { renta_fija: 50, fondos_mutuos: 30, fideicomisos: 15, efectivo: 5 }),
+                    portafolio_justificacion: "Asignación basada en el perfil de riesgo y horizonte detectados en la conversación.",
+                    perfil_comportamiento: "Cliente analítico que valora la claridad en tasas y condiciones antes de decidir.",
+                    estrategia_comercial: "Presentar comparativos concretos y resolver la objeción principal en la primera llamada.",
+                    objeciones_respuestas: "Ante dudas de tasas: ofrecer confirmación por escrito de un asesor certificado.",
+                    email_plantilla: "Estimado cliente, gracias por su interés en Synapse. Me gustaría agendar una breve llamada para presentarle una propuesta acorde a su perfil."
+                });
+                return { text };
+            }
+            if (false) {
                 text = JSON.stringify({
                     correo_cliente: "carga@test.com",
                     tipo_cliente: "B2C",
@@ -691,7 +783,9 @@ app.post('/api/auth/login', limiteLogin, async (req, res) => {
             if (usuarioNormalizado === 'admin' && password === 'admin') {
                 console.log(`🔐 LOGIN SIMULADO (ADMIN): ${usuarioNormalizado}`);
                 setCookieSesion(req, res, 'mock_admin_token', SESION_DURACION_MS / 1000);
-                return res.json({ token: 'mock_admin_token', nombre: 'Administrador Mock', rol: 'admin' });
+                // SEGURIDAD: el token de admin viaja SOLO en la cookie httpOnly (nunca en el body).
+                // El frontend no lo necesita: guardarSesion() solo usa nombre/rol.
+                return res.json({ nombre: 'Administrador Mock', rol: 'admin' });
             }
             registrarFalloLogin(usuarioNormalizado);
             return res.status(401).json({ error: 'Credenciales incorrectas.' });
@@ -724,7 +818,8 @@ app.post('/api/auth/login', limiteLogin, async (req, res) => {
 
         console.log(`🔐 LOGIN EXITOSO (ADMIN): ${cuenta.usuario} (${cuenta.rol})`);
         setCookieSesion(req, res, token, SESION_DURACION_MS / 1000);
-        res.json({ token, nombre: cuenta.nombre, rol: cuenta.rol, expira_en: expira });
+        // SEGURIDAD: el token de admin viaja SOLO en la cookie httpOnly (nunca en el body)
+        res.json({ nombre: cuenta.nombre, rol: cuenta.rol, expira_en: expira });
     } catch (e) {
         console.error('❌ ERROR EN LOGIN ADMIN:', e.message || e);
         res.status(500).json({ error: 'Error interno al iniciar sesión.' });

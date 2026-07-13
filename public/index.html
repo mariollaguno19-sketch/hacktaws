@@ -662,7 +662,7 @@
         /* ── Estilos Desktop CRM (Bento original) ── */
         .desktop-kpis {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 16px;
             margin-bottom: 32px;
         }
@@ -1611,12 +1611,23 @@
         }
 
         @media (max-width: 1024px) {
+            .desktop-kpis {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .crm-layout-grid {
+                grid-template-columns: 1fr 300px;
+                gap: 16px;
+            }
+        }
+
+        @media (max-width: 768px) {
             .crm-layout-grid {
                 grid-template-columns: 1fr;
             }
             .crm-analytics-col {
-                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
                 display: grid;
+                gap: 16px;
             }
         }
 
